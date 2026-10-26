@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3c6a1">
+    <meta name="description" content="Explore Illes 23 Fair, an interactive portfolio by a game developer, producer, and illustrator.">
+    <title>Illes 23 Fair — Interactive Portfolio</title>
+    <link rel="stylesheet" href="css/console-ui.css">
+    <link rel="stylesheet" href="css/fair-map.css">
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body data-mode="fair">
+    <main class="console-shell" aria-label="Illes 23 Fair handheld console">
+      <aside class="console-side console-side--left" aria-label="Movement controls and asset information">
+        <section class="side-panel controls-panel">
+          <h2 class="side-heading">Move</h2>
+          <!-- HTML controls are accessible and easy to skin. To use the Fishes-style canvas,
+               draw the pad into a canvas but retain these buttons as transparent hit targets;
+               for a finished PNG skin, apply it as a background-image to this same control.
+               Canvas/PNG-only controls lose native focus, labels, and reliable hit testing. -->
+          <div class="dpad" role="group" aria-label="Movement pad. WASD or touch to move.">
+            <button class="pad-button pad-up" type="button" data-action="up" aria-label="Move up">▲</button>
+            <button class="pad-button pad-left" type="button" data-action="left" aria-label="Move left">◀</button>
+            <button class="pad-button pad-center" type="button" data-action="confirm" aria-label="Confirm or enter attraction">A</button>
+            <button class="pad-button pad-right" type="button" data-action="right" aria-label="Move right">▶</button>
+            <button class="pad-button pad-down" type="button" data-action="down" aria-label="Move down">▼</button>
+          </div>
+          <p class="control-hint">WASD · Space to enter</p>
+        </section>
+        <section class="side-panel dev-panel" aria-label="Development asset details">
+          <h2 class="side-heading">Asset log</h2>
+          <dl class="asset-stats">
+            <div><dt>Time spent</dt><dd data-stat="time">Not connected</dd></div>
+            <div><dt>Status</dt><dd data-stat="status">Prototype</dd></div>
+            <div><dt>Description</dt><dd data-stat="description">Fair map and attraction portals</dd></div>
+            <div><dt>Asset type</dt><dd data-stat="type">SVG · HTML · CSS</dd></div>
+          </dl>
+        </section>
+      </aside>
+
+      <section class="console-main" aria-label="Fair game screen">
+        <header class="screen-header">
+          <a class="brand" href="index.html" aria-label="Illes 23 Fair home">ILLES <span>23</span> FAIR</a>
+          <div class="screen-tools">
+            <p class="screen-status" id="screen-status" aria-live="polite">The fair is waiting for you</p>
+            <button class="mode-toggle" id="dev-mode-toggle" type="button" aria-pressed="false">
+              Game B · Dev Mode
+            </button>
+          </div>
+        </header>
+
+        <div class="screen-frame">
+          <section class="fair-viewport" id="fair-viewport" aria-label="Explore the fair map">
+            <!-- The supplied draft already contains the park illustration. Keep it as a
+                 replaceable artwork layer; interactive labels and the player stay in HTML. -->
+            <img class="fair-art" src="HomePage.svg" alt="" aria-hidden="true">
+
+            <!-- SVG layers work well for scalable paths and decorative illustration.
+                 Multiple canvases are efficient for frequently redrawn pixels, but complicate
+                 hit testing, accessibility, and responsive alignment. Prefer DOM/SVG for the
+                 few clickable portals and labels; add canvases only for dense particle effects. -->
+            <svg class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <path id="fair-route" class="fair-route" d="M 8 68 C 20 58, 23 36, 39 43 S 59 72, 74 54 S 87 37, 95 44"></path>
+            </svg>
+
+            <nav class="portal-layer" aria-label="Fair attractions">
+              <a class="portal portal--lake" href="pages/lake-tour.html" data-portal="Portal01_LakeTour" style="--portal-x: 34%; --portal-y: 46%;">
+                <span class="portal-number">01</span><span>Lake Tour</span>
+              </a>
+              <a class="portal portal--fishing" href="pages/fishing-game.html" data-portal="Portal02_FishingGame" style="--portal-x: 69%; --portal-y: 58%;">
+                <span class="portal-number">02</span><span>Fishing Game</span>
+              </a>
+              <button class="portal portal--future" type="button" disabled style="--portal-x: 50%; --portal-y: 25%;">
+                <span class="portal-number">03</span><span>Photo Booth · soon</span>
+              </button>
+              <button class="portal portal--future portal--future-lower" type="button" disabled style="--portal-x: 83%; --portal-y: 78%;">
+                <span class="portal-number">04</span><span>Magic Garden · soon</span>
+              </button>
+              <button class="portal portal--future" type="button" disabled style="--portal-x: 81%; --portal-y: 28%;">
+                <span class="portal-number">05</span><span>Time Train · soon</span>
+              </button>
+              <button class="portal portal--future" type="button" disabled style="--portal-x: 16%; --portal-y: 27%;">
+                <span class="portal-number">06</span><span>Cafe Terrace · soon</span>
+              </button>
+              <button class="portal portal--future" type="button" disabled style="--portal-x: 17%; --portal-y: 81%;">
+                <span class="portal-number">07</span><span>Sunset Bench · soon</span>
+              </button>
+            </nav>
+
+            <div class="player-marker" id="player-marker" role="img" aria-label="Player character">
+              <!-- TODO: Replace this draft marker with a single transparent idle PNG.
+                   For sprite animation, use a sprite-sheet background and select a row/frame
+                   from player-controller.js based on facing and movement state. -->
+              <span aria-hidden="true">✿</span>
+            </div>
+
+            <div class="welcome-overlay" id="welcome-overlay">
+              <p class="welcome-label">Welcome to</p>
+              <h1>Illes 23 Fair</h1>
+              <p>Choose a path, find a portal, and step into a story.</p>
+              <button class="enter-button" id="enter-fair" type="button">Enter the fair</button>
+            </div>
+
+            <!-- TODO: Replace these simple flower SVGs with the finished foreground artwork.
+                 Keep them as separate layers so enterFair() can move them out of the viewport.
+                 Ticket-office SVG export from Figma, Inkscape, or an iPad drawing app: keep a source
+                 copy; export with a responsive viewBox; use clear IDs for paths targeted by CSS/JS;
+                 add title/description for standalone artwork; then run SVGO with conservative
+                 precision and remove editor metadata.
+                 Check the optimized SVG in-browser and confirm filters, clipping, and embedded
+                 raster links still work. SVGO does not optimize embedded PNGs; optimize those
+                 separately and avoid embedding large raster images in the SVG when possible. -->
+            <div class="flower-curtain flower-curtain--left" id="flower-left" aria-hidden="true">
+              <svg viewBox="0 0 220 300" focusable="false">
+                <path d="M0 300V95C35 86 44 48 82 52c19-42 75-31 82 10 35 2 52 29 56 63v175Z" fill="#ef7a83"/>
+                <circle cx="88" cy="102" r="21" fill="#ffd77d"/><circle cx="52" cy="147" r="18" fill="#fff0bd"/>
+                <path d="M24 300c34-66 70-58 84-126 38 42 31 78 79 126" fill="none" stroke="#52794a" stroke-width="12"/>
+              </svg>
+            </div>
+            <div class="flower-curtain flower-curtain--right" id="flower-right" aria-hidden="true">
+              <svg viewBox="0 0 220 300" focusable="false">
+                <path d="M220 300V88c-38-8-43-45-82-40-20-42-75-32-83 9C20 60 4 88 0 122v178Z" fill="#f4b14e"/>
+                <circle cx="132" cy="99" r="21" fill="#f7e7a3"/><circle cx="168" cy="148" r="18" fill="#fff0bd"/>
+                <path d="M196 300c-35-66-69-58-84-126-38 42-31 78-79 126" fill="none" stroke="#52794a" stroke-width="12"/>
+              </svg>
+            </div>
+            <p class="portal-prompt" id="portal-prompt" aria-live="polite">Move toward an attraction and press Space.</p>
+          </section>
+        </div>
+
+        <footer class="screen-footer">
+          <span>ARROWS / WASD TO WALK</span>
+          <span>SPACE / CENTER BUTTON TO ENTER</span>
+        </footer>
+      </section>
+
+      <aside class="console-side console-side--right" aria-label="Action controls and asset information">
+        <section class="side-panel controls-panel">
+          <h2 class="side-heading">Action</h2>
+          <div class="dpad dpad--arrows" role="group" aria-label="Arrow key movement pad. Touch to move.">
+            <button class="pad-button pad-up" type="button" data-action="up" aria-label="Move up">▲</button>
+            <button class="pad-button pad-left" type="button" data-action="left" aria-label="Move left">◀</button>
+            <span class="pad-spacer" aria-hidden="true"></span>
+            <button class="pad-button pad-right" type="button" data-action="right" aria-label="Move right">▶</button>
+            <button class="pad-button pad-down" type="button" data-action="down" aria-label="Move down">▼</button>
+          </div>
+          <button class="confirm-button" type="button" data-action="confirm" aria-label="Confirm or enter selected attraction">B · Enter</button>
+          <p class="control-hint">Arrow keys · Space to confirm</p>
+        </section>
+        <section class="side-panel dev-panel" aria-label="Asset tracker connection">
+          <h2 class="side-heading">Tracker</h2>
+          <p class="tracker-note">Live Jira / Sheets data can be connected here later.</p>
+          <p class="tracker-note">Publish a read-only, minimal data feed. Never place API keys or private project data in browser code.</p>
+        </section>
+      </aside>
+    </main>
+  </body>
+</html>

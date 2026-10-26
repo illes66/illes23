@@ -1,0 +1,73 @@
+/* Layout Principal estilo Consola */
+.console-wrapper {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: #111;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none; /* Deshabilita gestures predeterminados del navegador */
+}
+
+/* Laterales (Joy-Cons) */
+.joycon {
+  flex: 0 0 160px; /* Ancho fijo para las empuñaduras táctiles */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.joycon-left {
+  background-color: #00c3e3; /* Azul Neon Switch */
+  border-radius: 20px 0 0 20px;
+}
+
+.joycon-right {
+  background-color: #ff4554; /* Rojo Neon Switch */
+  border-radius: 0 20px 20px 0;
+}
+
+/* Pantalla / Frame Central */
+.game-frame {
+  flex: 1;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 4px solid #222;
+}
+
+.game-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Estilo de los SVGs del Pad */
+.dpad-svg {
+  width: 140px;
+  height: 140px;
+}
+
+.pad-base {
+  fill: #2d2d2d;
+}
+
+.dpad-btn {
+  fill: #1a1a1a;
+  cursor: pointer;
+  transition: fill 0.1s ease;
+}
+
+.dpad-trigger {
+  fill: #3a3a3a;
+  cursor: pointer;
+  transition: fill 0.1s ease;
+}
+
+/* Estado activo/presionado visual */
+.dpad-btn.active, .dpad-trigger.active {
+  fill: #ffffff;
+}
