@@ -35,7 +35,9 @@ export function createPortals({
 
   function setPOState(portal, state, enabled) {
     const poId = portal.dataset.poId;
-    for (const layer of document.querySelectorAll(".po-art[data-po-id], .po-outline[data-po-id]")) {
+    for (const layer of document.querySelectorAll(
+      ".po-art[data-po-id], .po-outline[data-po-id], .po-fence-flower-track[data-po-id]"
+    )) {
       if (layer.dataset.poId === poId) layer.classList.toggle(state, enabled);
     }
   }

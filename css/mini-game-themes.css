@@ -1,0 +1,66 @@
+/* Edit a game's colors and zone heights here.
+   sky-end sets where sky ends; water-end sets where water ends and sand begins.
+   Percentages are measured from the top of each mini-game screen. */
+.mini-game-screen {
+  --screen-sky: #91c9cb;
+  --screen-water: #87bdb0;
+  --screen-sand: #e6b977;
+  --screen-sky-end: 42%;
+  --screen-water-end: 65%;
+}
+
+.mini-game-screen[data-mini-game="fishing"] {
+  --screen-sky: #91c9cb;
+  --screen-water: #87bdb0;
+  --screen-sand: #e6b977;
+  --screen-sky-end: 42%;
+  --screen-water-end: 65%;
+}
+
+.mini-game-screen[data-mini-game="lake-tour"] {
+  --screen-sky: #b5e5ee;
+  --screen-water: #4faebd;
+  --screen-sand: #eed29b;
+  --screen-sky-end: 36%;
+  --screen-water-end: 80%;
+}
+
+.mini-game-screen[data-mini-game="comic"] {
+  --screen-sky: #f4c2b5;
+  --screen-water: #d889a8;
+  --screen-sand: #f4d28c;
+  --screen-sky-end: 40%;
+  --screen-water-end: 76%;
+}
+
+.mini-game-screen[data-mini-game="teatrino"] {
+  --screen-sky: #e7d2ef;
+  --screen-water: #8bb5cc;
+  --screen-sand: #e9c48f;
+  --screen-sky-end: 38%;
+  --screen-water-end: 72%;
+}
+
+.mini-game-screen[data-mini-game="bench"] {
+  --screen-sky: #c9e6c6;
+  --screen-water: #75b09c;
+  --screen-sand: #ddbd8d;
+  --screen-sky-end: 45%;
+  --screen-water-end: 70%;
+}
+
+.mini-game-screen[data-mini-game="photo-shoot"] {
+  --screen-sky: #b8def4;
+  --screen-water: #78bfc8;
+  --screen-sand: #f1d7a4;
+  --screen-sky-end: 48%;
+  --screen-water-end: 74%;
+}
+
+.mini-game-screen[data-mini-game="cafeteria"] {
+  --screen-sky: #f4d4a9;
+  --screen-water: #d79a79;
+  --screen-sand: #f0c983;
+  --screen-sky-end: 35%;
+  --screen-water-end: 67%;
+}

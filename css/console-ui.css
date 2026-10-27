@@ -371,6 +371,8 @@ body[data-mode="dev"] .dev-panel {
   cursor: pointer;
 }
 
+/* This selector controls frame layout. Edit the mini-game palette and zone
+   proportions in css/mini-game-themes.css instead. */
 .screen-frame {
   min-width: 0;
   min-height: 0;

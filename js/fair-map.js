@@ -3,6 +3,7 @@ const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 // Add new flower PNGs here; the eight instances cycle through the configured assets.
 const FLOWER_ASSETS = ["rosa.png.png"];
 const FLOWER_COUNT = 8;
+const PO_FLOWER_SIZE = 56;
 const PO_OUTLINE_FALLBACKS = {
   PO06_BenchArea: "M1290 510H1460V669H1290Z",
   PO07_FotoShootArea: "M605 75H763V232H605Z"
@@ -147,18 +148,61 @@ function addFenceFlowers(source, flowerLayer) {
   };
 }
 
+function addPOFenceFlowers(outlineGroup, flowerLayer, poId, transform) {
+  const candidatePaths = [...outlineGroup.querySelectorAll(".po-outline-shape")]
+    .filter((path) => {
+      const length = path.getTotalLength();
+      return Number.isFinite(length) && length > 0;
+    })
+    .sort((first, second) => second.getTotalLength() - first.getTotalLength());
+  const fencePath = candidatePaths[0];
+  if (!fencePath) throw new Error(`The ${poId} attraction has no usable fence path.`);
+
+  const path = document.importNode(fencePath, false);
+  path.setAttribute("class", "flower-motion-path");
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", "none");
+
+  const track = document.createElementNS(SVG_NAMESPACE, "g");
+  track.classList.add("po-fence-flower-track");
+  track.dataset.poId = poId;
+  track.setAttribute("transform", transform);
+  track.append(path);
+
+  const flower = document.createElementNS(SVG_NAMESPACE, "image");
+  flower.setAttribute("href", FLOWER_ASSETS[0]);
+  flower.setAttribute("filter", "url(#flower-white-background)");
+  flower.setAttribute("width", String(PO_FLOWER_SIZE));
+  flower.setAttribute("height", String(PO_FLOWER_SIZE));
+  flower.setAttribute("transform", path.getAttribute("transform") ?? "");
+  flower.setAttribute("aria-hidden", "true");
+  track.append(flower);
+  flowerLayer.append(track);
+
+  const length = path.getTotalLength();
+  return (timestamp) => {
+    if (!track.classList.contains("is-player-inside")) return;
+    const point = path.getPointAtLength((timestamp * 0.025) % length);
+    const halfSize = PO_FLOWER_SIZE / 2;
+    flower.setAttribute("x", String(point.x - halfSize));
+    flower.setAttribute("y", String(point.y - halfSize));
+  };
+}
+
 export async function loadFairMapArtwork() {
   const artworkLayers = [...document.querySelectorAll(ARTWORK_SELECTOR)];
   const fairArt = document.querySelector("#fair-art");
   const walkableLayer = document.querySelector("#walkable-areas");
   const outlineLayer = document.querySelector("#po-outlines");
   const flowerLayer = document.querySelector("#fence-flowers");
-  if (!fairArt || !walkableLayer || !outlineLayer || !flowerLayer) {
+  const poFlowerLayer = document.querySelector("#po-fence-flowers");
+  if (!fairArt || !walkableLayer || !outlineLayer || !flowerLayer || !poFlowerLayer) {
     throw new Error("The fair map is missing its collision, outline, or flower layer.");
   }
   addFlowerBackgroundFilter(fairArt);
 
   let updateFlowers = null;
+  const updatePOFlowers = [];
   await Promise.all(artworkLayers.map(async (artLayer) => {
     const assetPath = artLayer.dataset.artSrc;
     const source = await fetchSvg(assetPath);
@@ -173,8 +217,9 @@ export async function loadFairMapArtwork() {
     const walkableGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
     walkableGroup.setAttribute("transform", artLayer.getAttribute("transform") ?? "");
     walkableLayer.append(walkableGroup);
+    let outlineGroup = null;
     if (poId) {
-      const outlineGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      outlineGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
       outlineGroup.setAttribute("class", "po-outline");
       outlineGroup.dataset.poId = poId;
       outlineGroup.setAttribute("transform", artLayer.getAttribute("transform") ?? "");
@@ -182,6 +227,14 @@ export async function loadFairMapArtwork() {
     }
 
     addWalkableShapes(source, artLayer, walkableGroup, outlineLayer);
+    if (poId) {
+      updatePOFlowers.push(addPOFenceFlowers(
+        outlineGroup,
+        poFlowerLayer,
+        poId,
+        artLayer.getAttribute("transform") ?? ""
+      ));
+    }
 
     if (assetPath === "WalkingPath&Islandfence.svg") {
       updateFlowers = addFenceFlowers(source, flowerLayer);
@@ -189,5 +242,10 @@ export async function loadFairMapArtwork() {
   }));
 
   if (!updateFlowers) throw new Error("The fair map is missing its walking-path flower source.");
-  return { updateFlowers };
+  return {
+    updateFlowers(timestamp) {
+      updateFlowers(timestamp);
+      updatePOFlowers.forEach((updatePOFlower) => updatePOFlower(timestamp));
+    }
+  };
 }

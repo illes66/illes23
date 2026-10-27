@@ -7,8 +7,8 @@
   aspect-ratio: 16 / 10;
   overflow: hidden;
   isolation: isolate;
-  --game-sky: #d8f6ff;
-  --game-sea: #3db6e6;
+  --game-sky: #fbddd9;
+  --game-sea: #b0dfe0;
   --game-sand: #f0d8a8;
   /* Edit these colors and stops to tune the sky/sea/sand palette and their canvas heights. */
   --game-sky-end: 36%;
@@ -397,9 +397,13 @@ body.is-leaving .flower-curtain {
   padding: clamp(20px, 5vw, 70px);
   border: 3px solid #f7e3b4;
   border-radius: 24px;
-  background:
-    radial-gradient(ellipse at 50% 75%, rgba(245, 222, 155, 0.75), transparent 48%),
-    linear-gradient(180deg, #91c9cb 0 42%, #87bdb0 43% 65%, #e6b977 66%);
+  /* Per-game colors and zone heights are set in css/mini-game-themes.css. */
+  background: linear-gradient(
+    180deg,
+    var(--screen-sky) 0 var(--screen-sky-end),
+    var(--screen-water) var(--screen-sky-end) var(--screen-water-end),
+    var(--screen-sand) var(--screen-water-end) 100%
+  );
   color: #3d2d32;
   text-align: center;
 }
