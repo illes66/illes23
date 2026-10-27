@@ -1,28 +1,88 @@
 import { createInputHandler } from "./input-handler.js";
 import { createPlayerController } from "./player-controller.js";
 import { createPortals } from "./portals.js";
+import { loadDirectionalPadArtwork } from "./console-ui.js";
+import { loadFairMapArtwork } from "./fair-map.js";
+
+const FAIR_STATE_KEY = "illes23-fair-position";
+
+function restoreFairState() {
+  const savedState = sessionStorage.getItem(FAIR_STATE_KEY);
+  if (!savedState) return null;
+
+  let state;
+  try {
+    state = JSON.parse(savedState);
+  } catch (error) {
+    console.error("Could not restore the saved fair position.", error);
+    sessionStorage.removeItem(FAIR_STATE_KEY);
+    return null;
+  }
+
+  if (
+    !Number.isFinite(state?.position?.x)
+    || !Number.isFinite(state?.position?.y)
+    || state.position.x < 0 || state.position.x > 100
+    || state.position.y < 0 || state.position.y > 100
+  ) {
+    console.error("The saved fair position is invalid and has been discarded.");
+    sessionStorage.removeItem(FAIR_STATE_KEY);
+    return null;
+  }
+
+  sessionStorage.removeItem(FAIR_STATE_KEY);
+  return state;
+}
 
 const body = document.body;
 const viewport = document.querySelector("#fair-viewport");
 const playerElement = document.querySelector("#player-marker");
-const routePath = document.querySelector("#fair-route");
 const welcomeOverlay = document.querySelector("#welcome-overlay");
 const screenStatus = document.querySelector("#screen-status");
 const promptElement = document.querySelector("#portal-prompt");
 const devModeToggle = document.querySelector("#dev-mode-toggle");
 const enterButton = document.querySelector("#enter-fair");
-const appState = { screen: "welcome", mode: "fair" };
+await loadDirectionalPadArtwork();
+const fairMapArtwork = await loadFairMapArtwork();
+const walkableAreas = [...document.querySelectorAll(".walkable-area")];
+if (walkableAreas.length === 0) {
+  throw new Error("The fair map did not load any walkable paths.");
+}
+const restoredState = restoreFairState();
+const appState = { screen: restoredState ? "fair" : "welcome", mode: "fair" };
 
 const player = createPlayerController({
   element: playerElement,
   viewport,
-  routePath,
-  // Change to "free" for open park exploration. The controller keeps all motion
-  // inside the viewport and is ready for collision zones and transport mounting.
-  movementMode: "path"
+  walkableAreas,
+  // Use "free" only if you want to remove all map boundaries for open exploration.
+  movementMode: "area"
 });
-const portals = createPortals({ viewport, player, promptElement, statusElement: screenStatus });
+player.setPosition(restoredState?.position ?? player.getPosition());
+
+const portals = createPortals({
+  viewport,
+  player,
+  promptElement,
+  statusElement: screenStatus,
+  initialPortalId: restoredState?.portalId,
+  onBeforeNavigate() {
+    sessionStorage.setItem(FAIR_STATE_KEY, JSON.stringify({
+      position: player.getPosition(),
+      portalId: portals.getSelectedPortalId()
+    }));
+  }
+});
 let previousFrameTime = 0;
+
+if (restoredState) {
+  body.dataset.entered = "true";
+  welcomeOverlay.setAttribute("aria-hidden", "true");
+  body.classList.add("is-arriving");
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => body.classList.remove("is-arriving"));
+  });
+}
 
 function enterFair() {
   if (appState.screen !== "welcome") return;
@@ -50,7 +110,7 @@ function toggleDevMode() {
 }
 
 function handleConfirm() {
-  if (!hasEntered) {
+  if (appState.screen === "welcome") {
     enterFair();
     return;
   }
@@ -59,8 +119,11 @@ function handleConfirm() {
 
 createInputHandler({
   root: document,
-  onDirection(direction, pressed) {
+  onMove(direction, pressed) {
     if (appState.screen === "fair") player.setDirection(direction, pressed);
+  },
+  onPortalNavigate(action) {
+    portals.moveSelection(action);
   },
   onConfirm: handleConfirm
 });
@@ -76,6 +139,7 @@ function frame(timestamp) {
   if (appState.screen === "fair") {
     player.update(deltaSeconds);
     portals.update();
+    fairMapArtwork.updateFlowers(timestamp);
   }
   window.requestAnimationFrame(frame);
 }

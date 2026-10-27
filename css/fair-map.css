@@ -7,13 +7,24 @@
   aspect-ratio: 16 / 10;
   overflow: hidden;
   isolation: isolate;
-  border-radius: clamp(8px, 1.2vw, 15px);
-  background: #d4a67c;
+  --game-sky: #d8f6ff;
+  --game-sea: #3db6e6;
+  --game-sand: #f0d8a8;
+  /* Edit these colors and stops to tune the sky/sea/sand palette and their canvas heights. */
+  --game-sky-end: 36%;
+  --game-sea-end: 88%;
+  background: linear-gradient(
+    var(--game-sky) 0 var(--game-sky-end),
+    var(--game-sea) var(--game-sky-end) var(--game-sea-end),
+    var(--game-sand) var(--game-sea-end) 100%
+  );
 }
 
 .fair-art,
-.route-layer,
+.walkable-layer,
+.po-outline-layer,
 .portal-layer,
+.flower-transition-backdrop,
 .flower-curtain,
 .player-marker {
   position: absolute;
@@ -24,12 +35,13 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
-  filter: saturate(0.88);
 }
 
-.route-layer {
+.fair-art {
+  filter: saturate(0.92);
+}
+
+.walkable-layer {
   z-index: 1;
   inset: 0;
   width: 100%;
@@ -37,14 +49,127 @@
   pointer-events: none;
 }
 
-.fair-route {
-  fill: none;
-  stroke: rgba(255, 247, 197, 0.92);
-  stroke-width: 0.75;
-  stroke-linecap: round;
-  stroke-dasharray: 1.8 2.4;
+.walkable-area {
+  fill: #000;
+  opacity: 0;
+}
+
+.po-outline-layer {
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.po-art,
+.po-outline {
+  --po-outline-color: #ffdb57;
+  color: var(--po-outline-color);
+}
+
+.po-art {
+  transition: filter 240ms ease;
+  cursor: pointer;
+}
+
+.po-art[data-po-id="PO02_ComicForeground"],
+.po-outline[data-po-id="PO02_ComicForeground"] {
+  --po-outline-color: #f77c91;
+}
+
+.po-art[data-po-id="PO03_CircusFishingGameArea"],
+.po-outline[data-po-id="PO03_CircusFishingGameArea"] {
+  --po-outline-color: #ffdc5e;
+}
+
+.po-art[data-po-id="PO04_LakeTour"],
+.po-outline[data-po-id="PO04_LakeTour"] {
+  --po-outline-color: #78e0d1;
+}
+
+.po-art[data-po-id="PO05_TeatrinoArea"],
+.po-outline[data-po-id="PO05_TeatrinoArea"] {
+  --po-outline-color: #ff9a83;
+}
+
+.po-art[data-po-id="PO06_BenchArea"],
+.po-outline[data-po-id="PO06_BenchArea"] {
+  --po-outline-color: #d3ec8b;
+}
+
+.po-art[data-po-id="PO07_FotoShootArea"],
+.po-outline[data-po-id="PO07_FotoShootArea"] {
+  --po-outline-color: #86d4ff;
+}
+
+.po-art[data-po-id="PO08_CafeteriaArea"],
+.po-outline[data-po-id="PO08_CafeteriaArea"] {
+  --po-outline-color: #ffbd71;
+}
+
+.po-outline-shape {
+  opacity: 0;
+  stroke: currentColor;
+  stroke-dasharray: 12 9;
+  stroke-dashoffset: 42;
+  stroke-width: 5;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 1px 1px rgba(76, 52, 40, 0.65));
+}
+
+.po-art.is-selected,
+.po-art.is-player-inside {
+  filter: drop-shadow(0 0 8px var(--po-outline-color));
+}
+
+.po-outline.is-selected .po-outline-shape,
+.po-outline.is-player-inside .po-outline-shape {
+  opacity: 0.9;
+  animation: po-outline-dash 4s linear infinite;
+}
+
+.po-outline[data-po-id="PO02_ComicForeground"] .po-outline-shape {
+  animation-duration: 5.2s;
+}
+
+.po-outline[data-po-id="PO03_CircusFishingGameArea"] .po-outline-shape {
+  animation-duration: 3.3s;
+}
+
+.po-outline[data-po-id="PO04_LakeTour"] .po-outline-shape {
+  animation-duration: 6s;
+}
+
+.po-outline[data-po-id="PO05_TeatrinoArea"] .po-outline-shape {
+  animation-duration: 4.5s;
+}
+
+.po-outline[data-po-id="PO06_BenchArea"] .po-outline-shape {
+  animation-duration: 7s;
+}
+
+.po-outline[data-po-id="PO07_FotoShootArea"] .po-outline-shape {
+  animation-duration: 3.8s;
+}
+
+.po-outline[data-po-id="PO08_CafeteriaArea"] .po-outline-shape {
+  animation-duration: 5.8s;
+}
+
+.flower-motion-path {
+  visibility: hidden;
+}
+
+#fence-flowers image {
+  opacity: 0.94;
+  pointer-events: none;
+}
+
+@keyframes po-outline-dash {
+  to {
+    stroke-dashoffset: -42;
+  }
 }
 
 .portal-layer {
@@ -56,19 +181,20 @@
   position: absolute;
   left: var(--portal-x);
   top: var(--portal-y);
-  min-width: clamp(100px, 13vw, 165px);
-  min-height: 48px;
+  min-width: 92px;
+  max-width: 145px;
+  min-height: 34px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 12px;
+  gap: 5px;
+  padding: 4px 7px;
   transform: translate(-50%, -50%);
   border: 2px dashed #fff2c8;
   border-radius: 12px;
   background: #b53e49;
   box-shadow: 0 4px 0 rgba(78, 40, 51, 0.4);
   color: white;
-  font-size: clamp(0.62rem, 1vw, 0.88rem);
+  font-size: clamp(0.54rem, 0.78vw, 0.76rem);
   font-weight: 900;
   text-align: left;
   text-decoration: none;
@@ -84,9 +210,9 @@
 
 .portal-number {
   display: grid;
-  width: 25px;
-  height: 25px;
-  flex: 0 0 25px;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
   place-items: center;
   border-radius: 50%;
   background: #f7d981;
@@ -96,13 +222,14 @@
 .portal--future {
   border-color: #fff8e4;
   background: rgba(70, 77, 61, 0.83);
-  cursor: not-allowed;
+  cursor: pointer;
   opacity: 0.82;
 }
 
 .portal--future:hover {
   background: rgba(70, 77, 61, 0.83);
-  outline: none;
+  outline: 2px solid #ffe99c;
+  outline-offset: 2px;
 }
 
 .portal--future-lower {
@@ -174,19 +301,21 @@
 }
 
 .flower-curtain {
+  /* Entry/exit flower speed: keep navigation waits in js/portals.js and
+     pages/attraction-page.js slightly longer than this duration (currently 560ms). */
   z-index: 6;
   top: 0;
   bottom: 0;
-  width: 24%;
-  min-width: 120px;
+  width: 56%;
+  min-width: 0;
   pointer-events: none;
-  transition: transform 700ms cubic-bezier(0.2, 0.72, 0.22, 1);
+  transition: transform 540ms cubic-bezier(0.2, 0.72, 0.22, 1);
 }
 
-.flower-curtain svg {
+.flower-curtain img {
   width: 100%;
   height: 100%;
-  overflow: visible;
+  object-fit: fill;
 }
 
 .flower-curtain--left {
@@ -195,6 +324,20 @@
 
 .flower-curtain--right {
   right: 0;
+}
+
+.flower-curtain--right img {
+  transform: scaleX(-1);
+}
+
+.flower-transition-backdrop {
+  /* Fade time for the colored transition backing; adjust independently from the flowers. */
+  z-index: 5;
+  inset: 0;
+  background: #edb36d;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 360ms ease;
 }
 
 .portal-prompt {
@@ -215,7 +358,7 @@
 }
 
 body:not([data-entered="true"]) .portal-layer,
-body:not([data-entered="true"]) .route-layer,
+body:not([data-entered="true"]) .walkable-layer,
 body:not([data-entered="true"]) .player-marker,
 body:not([data-entered="true"]) .portal-prompt {
   visibility: hidden;
@@ -235,9 +378,15 @@ body[data-entered="true"] .flower-curtain--right {
   transform: translateX(105%);
 }
 
-body.is-transitioning .console-main {
-  opacity: 0;
-  transition: opacity 140ms ease;
+body.is-arriving .flower-transition-backdrop,
+body.is-leaving .flower-transition-backdrop {
+  opacity: 1;
+}
+
+body.is-arriving .flower-curtain,
+body.is-leaving .flower-curtain {
+  z-index: 7;
+  transform: translateX(0);
 }
 
 .mini-game-screen {
@@ -285,6 +434,42 @@ body.is-transitioning .console-main {
   text-decoration: none;
 }
 
+.mini-game-body .flower-transition-backdrop {
+  position: fixed;
+  z-index: 30;
+  opacity: 1;
+}
+
+.mini-game-body .flower-curtain {
+  position: fixed;
+  z-index: 31;
+  transform: translateX(0);
+}
+
+.mini-game-body.is-arriving .flower-transition-backdrop {
+  opacity: 0;
+}
+
+.mini-game-body.is-arriving .flower-curtain--left {
+  transform: translateX(-105%);
+}
+
+.mini-game-body.is-arriving .flower-curtain--right {
+  transform: translateX(105%);
+}
+
+.mini-game-body.is-leaving .flower-transition-backdrop {
+  opacity: 1;
+}
+
+.mini-game-body.is-leaving .flower-curtain--left {
+  transform: translateX(0);
+}
+
+.mini-game-body.is-leaving .flower-curtain--right {
+  transform: translateX(0);
+}
+
 @media (max-width: 760px) {
   .fair-viewport {
     min-height: 0;
@@ -293,20 +478,17 @@ body.is-transitioning .console-main {
   }
 
   .portal {
-    min-width: 92px;
-    min-height: 40px;
-    padding: 5px 7px;
+    min-width: 72px;
+    max-width: 105px;
+    min-height: 30px;
+    padding: 3px 5px;
+    font-size: 0.52rem;
   }
 
   .portal-number {
-    width: 21px;
-    height: 21px;
-    flex-basis: 21px;
-  }
-
-  .flower-curtain {
-    width: 28%;
-    min-width: 90px;
+    width: 19px;
+    height: 19px;
+    flex-basis: 19px;
   }
 
   .mini-game-screen {
@@ -317,7 +499,9 @@ body.is-transitioning .console-main {
 @media (prefers-reduced-motion: reduce) {
   .welcome-overlay,
   .flower-curtain,
-  body.is-transitioning .console-main {
+  .flower-transition-backdrop,
+  .po-outline-shape {
     transition: none;
+    animation: none !important;
   }
 }

@@ -1,48 +1,95 @@
-const DIRECTION_KEYS = new Map([
-  ["KeyW", "up"], ["ArrowUp", "up"],
-  ["KeyA", "left"], ["ArrowLeft", "left"],
-  ["KeyS", "down"], ["ArrowDown", "down"],
-  ["KeyD", "right"], ["ArrowRight", "right"]
+// Control settings: edit these maps to reassign keyboard controls. Arrow keys move
+// the character; WASD cycles portal selection; Space/Enter confirms the selected portal.
+const MOVE_KEYS = new Map([
+  ["ArrowUp", "up"],
+  ["ArrowDown", "down"],
+  ["ArrowLeft", "left"],
+  ["ArrowRight", "right"]
 ]);
 
-const DIRECTION_ACTIONS = new Set(["up", "down", "left", "right"]);
+const PORTAL_KEYS = new Map([
+  ["KeyW", { action: "portal-previous", direction: "up" }],
+  ["KeyA", { action: "portal-previous", direction: "left" }],
+  ["KeyS", { action: "portal-next", direction: "down" }],
+  ["KeyD", { action: "portal-next", direction: "right" }]
+]);
 
-export function createInputHandler({ onDirection, onConfirm, root = document }) {
-  const heldSources = new Map();
+const MOVE_ACTIONS = new Set(["move-up", "move-down", "move-left", "move-right"]);
+
+function setButtonPressed(button, pressed) {
+  if (!button) return;
+  button.classList.toggle("is-pressed", pressed);
+
+  const pad = button.closest(".control-pad");
+  const direction = button.dataset.padDirection;
+  if (direction) pad?.classList.toggle(`is-${direction}-pressed`, pressed);
+}
+
+function selectPadDirection(button) {
+  if (!button) return;
+  const controller = button.closest(".console-controller");
+  if (!controller) return;
+
+  controller.querySelectorAll(".control-hit.is-selected").forEach((element) => {
+    element.classList.remove("is-selected");
+  });
+
+  button.classList.add("is-selected");
+}
+
+export function createInputHandler({ onMove, onPortalNavigate, onConfirm, root = document }) {
+  const heldMoves = new Map();
   const pointerActions = new Map();
   const pressedConfirmKeys = new Set();
+  const view = root.defaultView ?? window;
 
-  function setDirection(action, source, pressed) {
-    if (!DIRECTION_ACTIONS.has(action)) return;
+  function updateMoveHighlight(direction) {
+    const sources = heldMoves.get(direction);
+    const button = root.querySelector(`[data-action="move-${direction}"]`);
+    setButtonPressed(button, Boolean(sources?.size));
+  }
 
-    let sources = heldSources.get(action);
+  function setMove(direction, source, pressed) {
+    let sources = heldMoves.get(direction);
     if (!sources) {
       sources = new Set();
-      heldSources.set(action, sources);
+      heldMoves.set(direction, sources);
     }
 
     const wasPressed = sources.size > 0;
     if (pressed) sources.add(source);
     else sources.delete(source);
 
-    const isPressed = sources.size > 0;
-    if (wasPressed !== isPressed) onDirection(action, isPressed);
+    if (wasPressed !== (sources.size > 0)) onMove(direction, sources.size > 0);
+    updateMoveHighlight(direction);
   }
 
   function pressConfirm(button) {
     onConfirm();
-    button?.classList.add("is-pressed");
+    setButtonPressed(button, true);
+    view.setTimeout(() => setButtonPressed(button, false), 360);
   }
 
-  function releaseConfirm(button) {
-    button?.classList.remove("is-pressed");
+  function navigatePortals(action, direction) {
+    onPortalNavigate(action);
+    const button = root.querySelector(`[data-action="${action}"][data-pad-direction="${direction}"]`);
+    selectPadDirection(button);
+    setButtonPressed(button, true);
+    view.setTimeout(() => setButtonPressed(button, false), 160);
   }
 
   function onKeyDown(event) {
-    const direction = DIRECTION_KEYS.get(event.code);
-    if (direction) {
+    const moveDirection = MOVE_KEYS.get(event.code);
+    if (moveDirection) {
       event.preventDefault();
-      setDirection(direction, `key:${event.code}`, true);
+      setMove(moveDirection, `key:${event.code}`, true);
+      return;
+    }
+
+    const portalKey = PORTAL_KEYS.get(event.code);
+    if (portalKey) {
+      event.preventDefault();
+      if (!event.repeat) navigatePortals(portalKey.action, portalKey.direction);
       return;
     }
 
@@ -54,59 +101,76 @@ export function createInputHandler({ onDirection, onConfirm, root = document }) 
   }
 
   function onKeyUp(event) {
-    const direction = DIRECTION_KEYS.get(event.code);
-    if (direction) {
-      setDirection(direction, `key:${event.code}`, false);
+    const moveDirection = MOVE_KEYS.get(event.code);
+    if (moveDirection) {
+      setMove(moveDirection, `key:${event.code}`, false);
       return;
     }
 
     if (pressedConfirmKeys.delete(event.code)) {
-      releaseConfirm(root.querySelector('[data-action="confirm"]'));
+      setButtonPressed(root.querySelector('[data-action="confirm"]'), false);
     }
   }
 
   function onPointerDown(event) {
-    const button = event.target.closest("[data-action]");
+    const button = event.target.closest?.("[data-action]");
+    if (!button || !root.contains(button)) return;
+
+    const action = button.dataset.action;
+    button.setPointerCapture?.(event.pointerId);
+
+    if (action === "portal-previous" || action === "portal-next") {
+      pointerActions.set(event.pointerId, { action, button });
+      setButtonPressed(button, true);
+      return;
+    }
+
+    if (action === "confirm") {
+      pointerActions.set(event.pointerId, { action, button });
+      setButtonPressed(button, true);
+      return;
+    }
+
+    if (MOVE_ACTIONS.has(action)) {
+      event.preventDefault();
+      const direction = action.slice("move-".length);
+      pointerActions.set(event.pointerId, { action, button });
+      setMove(direction, `pointer:${event.pointerId}`, true);
+    }
+  }
+
+  function onClick(event) {
+    const button = event.target.closest?.('[data-action="confirm"], [data-action="portal-previous"], [data-action="portal-next"]');
     if (!button || !root.contains(button)) return;
     event.preventDefault();
 
-    const action = button.dataset.action;
-    if (action === "confirm") {
-      pointerActions.set(event.pointerId, { action, button });
+    if (button.dataset.action === "confirm") {
       pressConfirm(button);
       return;
     }
 
-    if (DIRECTION_ACTIONS.has(action)) {
-      pointerActions.set(event.pointerId, { action, button });
-      button.classList.add("is-pressed");
-      setDirection(action, `pointer:${event.pointerId}`, true);
-      button.setPointerCapture?.(event.pointerId);
-    }
+    navigatePortals(button.dataset.action, button.dataset.padDirection);
   }
 
   function onPointerUp(event) {
     const pressed = pointerActions.get(event.pointerId);
     if (!pressed) return;
     pointerActions.delete(event.pointerId);
+    setButtonPressed(pressed.button, false);
 
-    if (DIRECTION_ACTIONS.has(pressed.action)) {
-      setDirection(pressed.action, `pointer:${event.pointerId}`, false);
-      pressed.button.classList.remove("is-pressed");
-    } else {
-      releaseConfirm(pressed.button);
+    if (MOVE_ACTIONS.has(pressed.action)) {
+      setMove(pressed.action.slice("move-".length), `pointer:${event.pointerId}`, false);
     }
   }
 
   function releaseAll() {
-    for (const [action, sources] of heldSources) {
-      if (sources.size) onDirection(action, false);
+    for (const [direction, sources] of heldMoves) {
+      if (sources.size) onMove(direction, false);
     }
-    heldSources.clear();
-    for (const { button } of pointerActions.values()) releaseConfirm(button);
+    heldMoves.clear();
     pointerActions.clear();
     pressedConfirmKeys.clear();
-    root.querySelectorAll(".is-pressed").forEach((button) => button.classList.remove("is-pressed"));
+    root.querySelectorAll(".control-hit.is-pressed").forEach((button) => setButtonPressed(button, false));
   }
 
   root.addEventListener("keydown", onKeyDown);
@@ -114,7 +178,8 @@ export function createInputHandler({ onDirection, onConfirm, root = document }) 
   root.addEventListener("pointerdown", onPointerDown);
   root.addEventListener("pointerup", onPointerUp);
   root.addEventListener("pointercancel", onPointerUp);
-  root.defaultView?.addEventListener("blur", releaseAll);
+  root.addEventListener("click", onClick);
+  view.addEventListener("blur", releaseAll);
 
   return {
     destroy() {
@@ -123,7 +188,8 @@ export function createInputHandler({ onDirection, onConfirm, root = document }) 
       root.removeEventListener("pointerdown", onPointerDown);
       root.removeEventListener("pointerup", onPointerUp);
       root.removeEventListener("pointercancel", onPointerUp);
-      root.defaultView?.removeEventListener("blur", releaseAll);
+      root.removeEventListener("click", onClick);
+      view.removeEventListener("blur", releaseAll);
       releaseAll();
     }
   };

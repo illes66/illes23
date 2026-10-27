@@ -1,3 +1,5 @@
+import "./attraction-page.js";
+
 const lakeTour = document.querySelector("#lake-tour-game");
 if (!lakeTour) throw new Error("Lake Tour page root was not found.");
 

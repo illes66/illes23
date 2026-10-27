@@ -1,0 +1,193 @@
+const ARTWORK_SELECTOR = "[data-art-src]";
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+// Add new flower PNGs here; the eight instances cycle through the configured assets.
+const FLOWER_ASSETS = ["rosa.png.png"];
+const FLOWER_COUNT = 8;
+const PO_OUTLINE_FALLBACKS = {
+  PO06_BenchArea: "M1290 510H1460V669H1290Z",
+  PO07_FotoShootArea: "M605 75H763V232H605Z"
+};
+
+function addFlowerBackgroundFilter(svg) {
+  const defs = document.createElementNS(SVG_NAMESPACE, "defs");
+  const filter = document.createElementNS(SVG_NAMESPACE, "filter");
+  filter.setAttribute("id", "flower-white-background");
+  filter.setAttribute("color-interpolation-filters", "sRGB");
+
+  const mask = document.createElementNS(SVG_NAMESPACE, "feColorMatrix");
+  mask.setAttribute("in", "SourceGraphic");
+  mask.setAttribute("type", "matrix");
+  mask.setAttribute("values", "0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -.299 -.587 -.114 0 1");
+  mask.setAttribute("result", "white-mask");
+
+  const composite = document.createElementNS(SVG_NAMESPACE, "feComposite");
+  composite.setAttribute("in", "SourceGraphic");
+  composite.setAttribute("in2", "white-mask");
+  composite.setAttribute("operator", "arithmetic");
+  composite.setAttribute("k1", "1");
+  composite.setAttribute("k2", "0");
+  composite.setAttribute("k3", "0");
+  composite.setAttribute("k4", "0");
+
+  filter.append(mask, composite);
+  defs.append(filter);
+  svg.prepend(defs);
+}
+
+function findReferencedPath(svg, useElement) {
+  const href = useElement.getAttribute("href")
+    ?? useElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+  if (!href?.startsWith("#")) {
+    throw new Error(`Map artwork contains an unsupported SVG reference: ${href ?? "(missing)"}`);
+  }
+
+  const referencedElement = svg.getElementById(href.slice(1));
+  if (!referencedElement || referencedElement.localName !== "path") {
+    throw new Error(`Map artwork reference ${href} does not point to a path.`);
+  }
+  return referencedElement;
+}
+
+function copyPath(path, className, transform = "") {
+  const copy = document.importNode(path, false);
+  copy.removeAttribute("id");
+  copy.setAttribute("class", className);
+  copy.setAttribute("fill", "black");
+  copy.setAttribute("opacity", "0");
+  if (transform) copy.setAttribute("transform", transform);
+  return copy;
+}
+
+async function fetchSvg(assetPath) {
+  const response = await fetch(assetPath);
+  if (!response.ok) {
+    throw new Error(`Could not load map artwork ${assetPath}: ${response.status} ${response.statusText}`);
+  }
+
+  const document = new DOMParser().parseFromString(await response.text(), "image/svg+xml");
+  if (document.querySelector("parsererror")) {
+    throw new Error(`Map artwork ${assetPath} is not valid SVG.`);
+  }
+  return document;
+}
+
+function addWalkableShapes(source, artLayer, walkableLayer, outlineLayer) {
+  const poId = artLayer.dataset.poId;
+  const isWalkingPath = artLayer.dataset.artSrc === "WalkingPath&Islandfence.svg";
+  const greenUses = [...source.querySelectorAll('use[fill="#51743B"]')];
+  const yellowUse = source.querySelector('use[fill="#FDD423"]');
+  const uses = isWalkingPath ? [yellowUse].filter(Boolean) : greenUses;
+
+  for (const useElement of uses) {
+    const referencedPath = findReferencedPath(source, useElement);
+    const useTransform = useElement.getAttribute("transform") ?? "";
+    const walkableShape = copyPath(referencedPath, "walkable-area", useTransform);
+    if (poId) walkableShape.dataset.poId = poId;
+    walkableLayer.append(walkableShape);
+
+    if (!poId) continue;
+    const outlineShape = copyPath(referencedPath, "po-outline-shape", useTransform);
+    outlineShape.removeAttribute("opacity");
+    outlineShape.setAttribute("fill", "none");
+    outlineShape.setAttribute("stroke", "currentColor");
+    outlineShape.setAttribute("stroke-width", "5");
+    outlineShape.setAttribute("stroke-linejoin", "round");
+    const outlineGroup = outlineLayer.querySelector(`[data-po-id="${poId}"]`);
+    outlineGroup.append(outlineShape);
+  }
+
+  if (poId && uses.length === 0 && PO_OUTLINE_FALLBACKS[poId]) {
+    const outlineShape = document.createElementNS(SVG_NAMESPACE, "path");
+    outlineShape.setAttribute("class", "po-outline-shape");
+    outlineShape.setAttribute("d", PO_OUTLINE_FALLBACKS[poId]);
+    outlineShape.setAttribute("fill", "none");
+    outlineShape.setAttribute("stroke", "currentColor");
+    outlineShape.setAttribute("stroke-width", "5");
+    outlineLayer.querySelector(`[data-po-id="${poId}"]`).append(outlineShape);
+  }
+}
+
+function addFenceFlowers(source, flowerLayer) {
+  const candidatePaths = [...source.querySelectorAll("path[d]")]
+    .filter((path) => path.getAttribute("d").length < 2000)
+    .sort((first, second) => second.getAttribute("d").length - first.getAttribute("d").length);
+  const fencePath = candidatePaths[0];
+  if (!fencePath) throw new Error("The walking-path SVG does not contain a usable fence path.");
+
+  const path = document.importNode(fencePath, false);
+  path.setAttribute("class", "flower-motion-path");
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", "none");
+  flowerLayer.append(path);
+  const length = path.getTotalLength();
+  if (!Number.isFinite(length) || length <= 0) {
+    throw new Error("The walking-path fence has no measurable length.");
+  }
+
+  const flowers = Array.from({ length: FLOWER_COUNT }, (_, index) => {
+    const flower = document.createElementNS("http://www.w3.org/2000/svg", "image");
+    flower.setAttribute("href", FLOWER_ASSETS[index % FLOWER_ASSETS.length]);
+    flower.setAttribute("filter", "url(#flower-white-background)");
+    flower.setAttribute("width", "78");
+    flower.setAttribute("height", "78");
+    flower.setAttribute("aria-hidden", "true");
+    flower.dataset.flowerIndex = String(index);
+    flowerLayer.append(flower);
+    return flower;
+  });
+
+  return (timestamp) => {
+    for (const flower of flowers) {
+      const offset = Number(flower.dataset.flowerIndex) / flowers.length;
+      const distance = (timestamp * 0.025 + offset * length) % length;
+      const point = path.getPointAtLength(distance);
+      flower.setAttribute("x", String(point.x - 39));
+      flower.setAttribute("y", String(point.y - 39));
+    }
+  };
+}
+
+export async function loadFairMapArtwork() {
+  const artworkLayers = [...document.querySelectorAll(ARTWORK_SELECTOR)];
+  const fairArt = document.querySelector("#fair-art");
+  const walkableLayer = document.querySelector("#walkable-areas");
+  const outlineLayer = document.querySelector("#po-outlines");
+  const flowerLayer = document.querySelector("#fence-flowers");
+  if (!fairArt || !walkableLayer || !outlineLayer || !flowerLayer) {
+    throw new Error("The fair map is missing its collision, outline, or flower layer.");
+  }
+  addFlowerBackgroundFilter(fairArt);
+
+  let updateFlowers = null;
+  await Promise.all(artworkLayers.map(async (artLayer) => {
+    const assetPath = artLayer.dataset.artSrc;
+    const source = await fetchSvg(assetPath);
+    const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
+    image.setAttribute("href", assetPath);
+    image.setAttribute("width", source.documentElement.getAttribute("width"));
+    image.setAttribute("height", source.documentElement.getAttribute("height"));
+    image.setAttribute("preserveAspectRatio", "none");
+    artLayer.append(image);
+
+    const poId = artLayer.dataset.poId;
+    const walkableGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    walkableGroup.setAttribute("transform", artLayer.getAttribute("transform") ?? "");
+    walkableLayer.append(walkableGroup);
+    if (poId) {
+      const outlineGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      outlineGroup.setAttribute("class", "po-outline");
+      outlineGroup.dataset.poId = poId;
+      outlineGroup.setAttribute("transform", artLayer.getAttribute("transform") ?? "");
+      outlineLayer.append(outlineGroup);
+    }
+
+    addWalkableShapes(source, artLayer, walkableGroup, outlineLayer);
+
+    if (assetPath === "WalkingPath&Islandfence.svg") {
+      updateFlowers = addFenceFlowers(source, flowerLayer);
+    }
+  }));
+
+  if (!updateFlowers) throw new Error("The fair map is missing its walking-path flower source.");
+  return { updateFlowers };
+}
