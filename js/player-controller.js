@@ -15,6 +15,8 @@ export function createPlayerController({
 }) {
   const position = { x: 50, y: 50 };
   const heldDirections = new Set();
+  const mapSvg = viewport.querySelector("#fair-art");
+  if (!mapSvg) throw new Error("The fair map artwork is missing its coordinate reference.");
 
   function isWalkable(x, y) {
     if (movementMode === "free") return true;
@@ -24,10 +26,14 @@ export function createPlayerController({
       throw new Error("The fair map has no usable walkable areas for collision checks.");
     }
 
-    const screenPoint = new DOMPoint(
-      bounds.left + (x / 100) * bounds.width,
-      bounds.top + (y / 100) * bounds.height
+    const viewBox = mapSvg.viewBox.baseVal;
+    const mapPoint = new DOMPoint(
+      viewBox.x + (x / 100) * viewBox.width,
+      viewBox.y + (y / 100) * viewBox.height
     );
+    const mapTransform = mapSvg.getScreenCTM();
+    if (!mapTransform) throw new Error("The fair map coordinate transform is unavailable.");
+    const screenPoint = mapPoint.matrixTransform(mapTransform);
     return walkableAreas.some((area) => {
       const transform = area.getScreenCTM();
       if (!transform) throw new Error("A walkable map shape is unavailable for collision checks.");
@@ -130,7 +136,14 @@ export function createPlayerController({
   }
 
   render();
-  return { setDirection, update, getPosition, getBounds, setPosition };
+  return {
+    setDirection,
+    update,
+    getPosition,
+    getBounds,
+    setPosition,
+    isMoving: () => heldDirections.size > 0
+  };
 }
 
 /*

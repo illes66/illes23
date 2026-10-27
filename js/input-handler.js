@@ -40,6 +40,7 @@ function selectPadDirection(button) {
 export function createInputHandler({ onMove, onPortalNavigate, onConfirm, root = document }) {
   const heldMoves = new Map();
   const pointerActions = new Map();
+  const pointerTapTimers = new Map();
   const pressedConfirmKeys = new Set();
   const view = root.defaultView ?? window;
 
@@ -120,13 +121,13 @@ export function createInputHandler({ onMove, onPortalNavigate, onConfirm, root =
     button.setPointerCapture?.(event.pointerId);
 
     if (action === "portal-previous" || action === "portal-next") {
-      pointerActions.set(event.pointerId, { action, button });
+      pointerActions.set(event.pointerId, { action, button, startedAt: performance.now() });
       setButtonPressed(button, true);
       return;
     }
 
     if (action === "confirm") {
-      pointerActions.set(event.pointerId, { action, button });
+      pointerActions.set(event.pointerId, { action, button, startedAt: performance.now() });
       setButtonPressed(button, true);
       return;
     }
@@ -134,7 +135,7 @@ export function createInputHandler({ onMove, onPortalNavigate, onConfirm, root =
     if (MOVE_ACTIONS.has(action)) {
       event.preventDefault();
       const direction = action.slice("move-".length);
-      pointerActions.set(event.pointerId, { action, button });
+      pointerActions.set(event.pointerId, { action, button, direction, startedAt: performance.now() });
       setMove(direction, `pointer:${event.pointerId}`, true);
     }
   }
@@ -159,7 +160,21 @@ export function createInputHandler({ onMove, onPortalNavigate, onConfirm, root =
     setButtonPressed(pressed.button, false);
 
     if (MOVE_ACTIONS.has(pressed.action)) {
-      setMove(pressed.action.slice("move-".length), `pointer:${event.pointerId}`, false);
+      setMove(pressed.direction, `pointer:${event.pointerId}`, false);
+      if (performance.now() - pressed.startedAt < 220) {
+        const source = `tap:${event.pointerId}`;
+        const previousTimer = pointerTapTimers.get(event.pointerId);
+        if (previousTimer) view.clearTimeout(previousTimer.timerId);
+
+        setMove(pressed.direction, source, true);
+        setButtonPressed(pressed.button, true);
+        const timerId = view.setTimeout(() => {
+          setMove(pressed.direction, source, false);
+          setButtonPressed(pressed.button, false);
+          pointerTapTimers.delete(event.pointerId);
+        }, 140);
+        pointerTapTimers.set(event.pointerId, { timerId, direction: pressed.direction, source, button: pressed.button });
+      }
     }
   }
 
@@ -170,6 +185,12 @@ export function createInputHandler({ onMove, onPortalNavigate, onConfirm, root =
     heldMoves.clear();
     pointerActions.clear();
     pressedConfirmKeys.clear();
+    for (const { timerId, direction, source, button } of pointerTapTimers.values()) {
+      view.clearTimeout(timerId);
+      setMove(direction, source, false);
+      setButtonPressed(button, false);
+    }
+    pointerTapTimers.clear();
     root.querySelectorAll(".control-hit.is-pressed").forEach((button) => setButtonPressed(button, false));
   }
 

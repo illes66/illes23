@@ -2,9 +2,11 @@
   position: relative;
   min-width: 0;
   width: 100%;
-  height: 100%;
-  min-height: 350px;
-  aspect-ratio: 16 / 10;
+  height: auto;
+  min-height: 0;
+  align-self: center;
+  /* Match the 1806x1013 map canvas. Change this ratio with the root SVG viewBoxes. */
+  aspect-ratio: 1806 / 1013;
   overflow: hidden;
   isolation: isolate;
   --game-sky: #fbddd9;
@@ -20,6 +22,43 @@
   );
 }
 
+@property --fair-sky-color {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: #fbddd9;
+}
+
+.fair-viewport::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 calc(100% - var(--game-sky-end));
+  background: var(--fair-sky-color, var(--game-sky));
+  pointer-events: none;
+}
+
+.fair-viewport[data-atmosphere="active"]::before {
+  animation: fair-sky-cycle 96s ease-in-out infinite alternate;
+}
+
+@keyframes fair-sky-cycle {
+  0% { --fair-sky-color: #b7e0eb; }
+  35% { --fair-sky-color: #f6c99c; }
+  68% { --fair-sky-color: #d890a0; }
+  100% { --fair-sky-color: #546b91; }
+}
+
+.fair-world {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  transform: translate(var(--camera-offset-x, 0px), var(--camera-offset-y, 0px))
+    scale(var(--camera-scale, 1));
+  transform-origin: top left;
+  transition: transform 900ms cubic-bezier(0.2, 0.72, 0.22, 1);
+  will-change: transform;
+}
+
 .fair-art,
 .walkable-layer,
 .po-outline-layer,
@@ -28,6 +67,12 @@
 .flower-curtain,
 .player-marker {
   position: absolute;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fair-world {
+    transition: none;
+  }
 }
 
 .fair-art {
@@ -72,6 +117,26 @@
 .po-art {
   transition: filter 240ms ease;
   cursor: pointer;
+}
+
+/* Future background SVG groups can opt into FairSceneAnimator rules by adding
+   data-fair-asset="sun|ferris-wheel|pagoda"; tune these states here. */
+[data-fair-asset="sun"].is-setting {
+  filter: saturate(1.25) brightness(0.95);
+}
+
+[data-fair-asset="ferris-wheel"].is-near {
+  animation: background-asset-turn 24s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+[data-fair-asset="pagoda"].is-visited {
+  filter: drop-shadow(0 0 12px rgba(255, 220, 94, 0.9));
+}
+
+@keyframes background-asset-turn {
+  to { transform: rotate(360deg); }
 }
 
 .po-art[data-po-id="PO02_ComicForeground"],
@@ -476,9 +541,10 @@ body.is-leaving .flower-curtain {
 
 @media (max-width: 760px) {
   .fair-viewport {
+    width: 100%;
+    height: auto;
     min-height: 0;
-    height: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 1806 / 1013;
   }
 
   .portal {
@@ -501,6 +567,10 @@ body.is-leaving .flower-curtain {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .fair-viewport[data-atmosphere="active"]::before,
+  [data-fair-asset="ferris-wheel"].is-near {
+    animation: none !important;
+  }
   .welcome-overlay,
   .flower-curtain,
   .flower-transition-backdrop,

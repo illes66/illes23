@@ -3,6 +3,8 @@ import { createPlayerController } from "./player-controller.js";
 import { createPortals } from "./portals.js";
 import { loadDirectionalPadArtwork } from "./console-ui.js";
 import { loadFairMapArtwork } from "./fair-map.js";
+import { createFairCamera } from "./fair-camera.js";
+import { FairSceneAnimator } from "./fair-scene-animator.js";
 
 const FAIR_STATE_KEY = "illes23-fair-position";
 
@@ -36,6 +38,7 @@ function restoreFairState() {
 
 const body = document.body;
 const viewport = document.querySelector("#fair-viewport");
+const world = document.querySelector("#fair-world");
 const playerElement = document.querySelector("#player-marker");
 const welcomeOverlay = document.querySelector("#welcome-overlay");
 const screenStatus = document.querySelector("#screen-status");
@@ -59,6 +62,8 @@ const player = createPlayerController({
   movementMode: "area"
 });
 player.setPosition(restoredState?.position ?? player.getPosition());
+const camera = createFairCamera({ viewport, world, player });
+const sceneAnimator = new FairSceneAnimator({ viewport, world });
 
 const portals = createPortals({
   viewport,
@@ -66,6 +71,9 @@ const portals = createPortals({
   promptElement,
   statusElement: screenStatus,
   initialPortalId: restoredState?.portalId,
+  onAttractionVisited(portalId) {
+    sceneAnimator.onAttractionVisited(portalId);
+  },
   onBeforeNavigate() {
     sessionStorage.setItem(FAIR_STATE_KEY, JSON.stringify({
       position: player.getPosition(),
@@ -79,6 +87,8 @@ if (restoredState) {
   body.dataset.entered = "true";
   welcomeOverlay.setAttribute("aria-hidden", "true");
   body.classList.add("is-arriving");
+  camera.showWorld();
+  sceneAnimator.start();
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => body.classList.remove("is-arriving"));
   });
@@ -90,6 +100,8 @@ function enterFair() {
   body.dataset.entered = "true";
   welcomeOverlay.setAttribute("aria-hidden", "true");
   screenStatus.textContent = "The fair is open — find an attraction";
+  camera.showWorld();
+  sceneAnimator.start();
 
   // TODO: Attach a GSAP/Anime.js timeline here to move the flower SVG layers
   // outward from the screen edges. The CSS transition is a lightweight fallback;
@@ -125,7 +137,9 @@ createInputHandler({
   onPortalNavigate(action) {
     portals.moveSelection(action);
   },
-  onConfirm: handleConfirm
+  onConfirm() {
+    handleConfirm();
+  }
 });
 
 enterButton.addEventListener("click", enterFair);
@@ -140,11 +154,17 @@ function frame(timestamp) {
     player.update(deltaSeconds);
     portals.update();
     fairMapArtwork.updateFlowers(timestamp);
+    camera.update(timestamp, player.isMoving());
+    sceneAnimator.update(timestamp, portals.getPlayerAreaId());
   }
   window.requestAnimationFrame(frame);
 }
 
 window.requestAnimationFrame(frame);
+window.addEventListener("pagehide", () => {
+  camera.destroy();
+  sceneAnimator.destroy();
+}, { once: true });
 
 /*
  * TODO: Connect tracker data through a small public, read-only endpoint with only

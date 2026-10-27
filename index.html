@@ -22,13 +22,13 @@
               <div class="control-hit-targets">
                 <button class="control-hit control-hit-up" type="button" data-action="portal-previous" data-pad-direction="up" aria-label="Select previous portal"></button>
                 <button class="control-hit control-hit-left" type="button" data-action="portal-previous" data-pad-direction="left" aria-label="Select previous portal"></button>
-                <button class="control-hit control-hit-center" type="button" data-action="confirm" data-pad-direction="center" aria-label="Select or confirm the selected portal"></button>
+                <button class="control-hit control-hit-center" type="button" data-action="confirm" data-pad-direction="center" aria-label="Enter the selected portal when at its gate"></button>
                 <button class="control-hit control-hit-right" type="button" data-action="portal-next" data-pad-direction="right" aria-label="Select next portal"></button>
                 <button class="control-hit control-hit-down" type="button" data-action="portal-next" data-pad-direction="down" aria-label="Select next portal"></button>
               </div>
             </div>
           </div>
-          <p class="control-hint">WASD · Center / Space to enter</p>
+          <p class="control-hint">W/S select PO · center enters at its gate</p>
         </section>
         <section class="side-panel dev-panel" aria-label="Development asset details">
           <h2 class="side-heading">Asset log</h2>
@@ -57,43 +57,46 @@
 
         <div class="screen-frame">
           <section class="fair-viewport" id="fair-viewport" aria-label="Explore the fair map">
-            <!-- Artwork placement uses the 1806x1013 HomePage01 reference coordinates.
-                 Adjust each transform when an exported SVG is moved or replaced; update the
-                 PO's zone and gate percentages below to match its new walkable entrance. -->
-            <svg class="fair-art" id="fair-art" viewBox="0 0 1806 1013" preserveAspectRatio="none" aria-hidden="true">
-              <g data-art-src="backgrounds.svg" transform="translate(300 0)"></g>
-              <g data-art-src="WalkingPath&amp;Islandfence.svg" transform="translate(-175 20) scale(1.05 0.84)"></g>
-              <g class="po-art" data-po-id="PO04_LakeTour" data-art-src="PO_04_LakeTour.svg" transform="translate(300 55)"></g>
-              <g class="po-art" data-po-id="PO07_FotoShootArea" data-art-src="PO_07_FotoShootArea.svg" transform="translate(605 75)"></g>
-              <g class="po-art" data-po-id="PO05_TeatrinoArea" data-art-src="PO_05_TeatrinoArea.svg" transform="translate(955 115)"></g>
-              <g class="po-art" data-po-id="PO03_CircusFishingGameArea" data-art-src="PO_03_CircusFishingGameArea.svg" transform="translate(340 320)"></g>
-              <g class="po-art" data-po-id="PO02_ComicForeground" data-art-src="PO_02_ComicForeground.svg" transform="translate(245 500)"></g>
-              <g class="po-art" data-po-id="PO00_EntranceArea" data-art-src="PO_00_EntranceArea.svg" transform="translate(710 450)"></g>
-              <g class="po-art" data-po-id="PO06_BenchArea" data-art-src="PO_06_BenchArea.svg" transform="translate(1290 510)"></g>
-              <g class="po-art" data-po-id="PO08_CafeteriaArea" data-art-src="PO_08_CafeteriaArea.svg" transform="translate(1250 500)"></g>
-              <g id="fence-flowers" transform="translate(-175 20) scale(1.05 0.84)"></g>
-              <g id="po-fence-flowers"></g>
-            </svg>
+            <!-- The fair canvas is 1806x1013. Update all SVG viewBoxes and the CSS ratio together if it changes. -->
+            <div class="fair-world" id="fair-world">
+              <svg class="fair-art" id="fair-art" viewBox="0 0 1806 1013" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <!-- backgrounds.svg loads as one image. For individual motion, split it into SVG groups
+                     and add data-fair-asset="sun", "ferris-wheel", or "pagoda"; rules are in js/fair-scene-animator.js. -->
+                <g data-art-src="backgrounds.svg" transform="translate(300 0)"></g>
+                <!-- Main path size/position: change translate(X Y) to move it and scale(X Y)
+                     to set width/height. Increase the second scale value to make it taller. -->
+                <g data-art-src="WalkingPath&amp;Islandfence.svg" transform="translate(-175 20) scale(1.05 0.84)"></g>
+                <g class="po-art" data-po-id="PO04_LakeTour" data-art-src="PO_04_LakeTour.svg" transform="translate(300 55)"></g>
+                <g class="po-art" data-po-id="PO07_FotoShootArea" data-art-src="PO_07_FotoShootArea.svg" transform="translate(605 75)"></g>
+                <g class="po-art" data-po-id="PO05_TeatrinoArea" data-art-src="PO_05_TeatrinoArea.svg" transform="translate(955 115)"></g>
+                <g class="po-art" data-po-id="PO03_CircusFishingGameArea" data-art-src="PO_03_CircusFishingGameArea.svg" transform="translate(340 320)"></g>
+                <g class="po-art" data-po-id="PO02_ComicForeground" data-art-src="PO_02_ComicForeground.svg" transform="translate(245 500)"></g>
+                <g class="po-art" data-po-id="PO00_EntranceArea" data-art-src="PO_00_EntranceArea.svg" transform="translate(710 450)"></g>
+                <g class="po-art" data-po-id="PO06_BenchArea" data-art-src="PO_06_BenchArea.svg" transform="translate(1290 510)"></g>
+                <g class="po-art" data-po-id="PO08_CafeteriaArea" data-art-src="PO_08_CafeteriaArea.svg" transform="translate(1250 500)"></g>
+                <g id="fence-flowers" transform="translate(-175 20) scale(1.05 0.84)"></g>
+                <g id="po-fence-flowers"></g>
+              </svg>
 
-            <svg class="walkable-layer" id="walkable-layer" viewBox="0 0 1806 1013" preserveAspectRatio="none" aria-hidden="true">
-              <g id="walkable-areas">
-                <!-- A short transparent connector joins the Comic green island to the main path. -->
-                <path class="walkable-area" fill="#000" opacity="0"
-                  d="M430 630L472 643L454 697L412 684Z"></path>
-                <!-- These two layers contain no filled lawn shape, so provide matching PO walk areas. -->
-                <path class="walkable-area" fill="#000" opacity="0" data-po-id="PO06_BenchArea"
-                  d="M1290 510H1460V669H1290Z"></path>
-                <path class="walkable-area" fill="#000" opacity="0" data-po-id="PO07_FotoShootArea"
-                  d="M605 75H763V232H605Z"></path>
-              </g>
-            </svg>
-            <svg class="po-outline-layer" id="po-outline-layer" viewBox="0 0 1806 1013" preserveAspectRatio="none" aria-hidden="true">
-              <g id="po-outlines"></g>
-            </svg>
+              <svg class="walkable-layer" id="walkable-layer" viewBox="0 0 1806 1013" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <g id="walkable-areas">
+                  <!-- A short transparent connector joins the Comic green island to the main path. -->
+                  <path class="walkable-area" fill="#000" opacity="0"
+                    d="M430 630L472 643L454 697L412 684Z"></path>
+                  <!-- These two layers contain no filled lawn shape, so provide matching PO walk areas. -->
+                  <path class="walkable-area" fill="#000" opacity="0" data-po-id="PO06_BenchArea"
+                    d="M1290 510H1460V669H1290Z"></path>
+                  <path class="walkable-area" fill="#000" opacity="0" data-po-id="PO07_FotoShootArea"
+                    d="M605 75H763V232H605Z"></path>
+                </g>
+              </svg>
+              <svg class="po-outline-layer" id="po-outline-layer" viewBox="0 0 1806 1013" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <g id="po-outlines"></g>
+              </svg>
 
-            <!-- Keep POs sorted by number. Zone and gate coordinates are percentages of this canvas. -->
-            <nav class="portal-layer" aria-label="Fair attractions">
-              <a class="portal portal--future" href="pages/attraction.html?po=PO02_ComicForeground" data-portal="PO02_ComicForeground" data-po-id="PO02_ComicForeground" data-gate-x="22" data-gate-y="68" data-zone-x="13" data-zone-y="50" data-zone-width="22" data-zone-height="38" style="--portal-x: 24%; --portal-y: 58%;">
+              <!-- Keep POs sorted by number. Zone and gate coordinates are percentages of this canvas. -->
+              <nav class="portal-layer" aria-label="Fair attractions">
+              <a class="portal" href="pages/comic-game.html" data-portal="PO02_ComicForeground" data-po-id="PO02_ComicForeground" data-gate-x="22" data-gate-y="68" data-zone-x="13" data-zone-y="50" data-zone-width="22" data-zone-height="38" style="--portal-x: 24%; --portal-y: 58%;">
                 <span class="portal-number">02</span><span>Comic</span>
               </a>
               <a class="portal portal--fishing" href="pages/fishing-game.html" data-portal="PO03_CircusFishingGameArea" data-po-id="PO03_CircusFishingGameArea" data-gate-x="34" data-gate-y="45" data-zone-x="19" data-zone-y="32" data-zone-width="18" data-zone-height="19" style="--portal-x: 29%; --portal-y: 37%;">
@@ -114,13 +117,14 @@
               <a class="portal portal--future" href="pages/attraction.html?po=PO08_CafeteriaArea" data-portal="PO08_CafeteriaArea" data-po-id="PO08_CafeteriaArea" data-gate-x="77" data-gate-y="69" data-zone-x="70" data-zone-y="66" data-zone-width="22" data-zone-height="22" style="--portal-x: 84%; --portal-y: 66%;">
                 <span class="portal-number">08</span><span>Cafeteria</span>
               </a>
-            </nav>
+              </nav>
 
-            <div class="player-marker" id="player-marker" role="img" aria-label="Player character">
-              <!-- TODO: Replace this draft marker with a single transparent idle PNG.
-                   For sprite animation, use a sprite-sheet background and select a row/frame
-                   from player-controller.js based on facing and movement state. -->
-              <span aria-hidden="true">✿</span>
+              <div class="player-marker" id="player-marker" role="img" aria-label="Player character">
+                <!-- TODO: Replace this draft marker with a single transparent idle PNG.
+                     For sprite animation, use a sprite-sheet background and select a row/frame
+                     from player-controller.js based on facing and movement state. -->
+                <span aria-hidden="true">✿</span>
+              </div>
             </div>
 
             <div class="welcome-overlay" id="welcome-overlay">
@@ -146,13 +150,13 @@
             <div class="flower-curtain flower-curtain--right" id="flower-right" aria-hidden="true">
               <img src="assets/flower-curtain.svg" alt="">
             </div>
-            <p class="portal-prompt" id="portal-prompt" aria-live="polite">Move toward an attraction and press Space.</p>
+            <p class="portal-prompt" id="portal-prompt" aria-live="polite">Select a portal, walk to its gate, then press center to enter.</p>
           </section>
         </div>
 
         <footer class="screen-footer">
-          <span>WASD / LEFT PAD: SELECT PORTAL</span>
-          <span>ARROWS / RIGHT PAD: MOVE · SPACE / CENTER: ENTER</span>
+          <span>W / S · LEFT PAD: SELECT PORTAL</span>
+          <span>ARROWS / RIGHT PAD: MOVE · SPACE / CENTER: ENTER AT GATE</span>
         </footer>
       </section>
 
@@ -164,13 +168,13 @@
               <div class="control-hit-targets">
                 <button class="control-hit control-hit-up" type="button" data-action="move-up" data-pad-direction="up" aria-label="Move player up"></button>
                 <button class="control-hit control-hit-left" type="button" data-action="move-left" data-pad-direction="left" aria-label="Move player left"></button>
-                <button class="control-hit control-hit-center" type="button" data-action="confirm" data-pad-direction="center" aria-label="Enter the selected attraction"></button>
+                <button class="control-hit control-hit-center" type="button" data-action="confirm" data-pad-direction="center" aria-label="Enter the selected portal when at its gate"></button>
                 <button class="control-hit control-hit-right" type="button" data-action="move-right" data-pad-direction="right" aria-label="Move player right"></button>
                 <button class="control-hit control-hit-down" type="button" data-action="move-down" data-pad-direction="down" aria-label="Move player down"></button>
               </div>
             </div>
           </div>
-          <p class="control-hint">Arrow keys · Center to enter a nearby PO</p>
+          <p class="control-hint">Arrow keys to move · center to enter selected PO at its gate</p>
         </section>
         <section class="side-panel dev-panel" aria-label="Asset tracker connection">
           <h2 class="side-heading">Tracker</h2>

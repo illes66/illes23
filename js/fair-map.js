@@ -210,7 +210,8 @@ export async function loadFairMapArtwork() {
     image.setAttribute("href", assetPath);
     image.setAttribute("width", source.documentElement.getAttribute("width"));
     image.setAttribute("height", source.documentElement.getAttribute("height"));
-    image.setAttribute("preserveAspectRatio", "none");
+    // Keep source artwork proportions; position/size are controlled by the parent SVG transform.
+    image.setAttribute("preserveAspectRatio", "xMidYMid meet");
     artLayer.append(image);
 
     const poId = artLayer.dataset.poId;

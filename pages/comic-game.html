@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4c2b5">
+    <title>Comic Foreground — Illes 23 Fair</title>
+    <link rel="stylesheet" href="../css/console-ui.css">
+    <link rel="stylesheet" href="../css/fair-map.css">
+    <link rel="stylesheet" href="../css/mini-game-themes.css">
+    <link rel="stylesheet" href="../css/comic-game.css">
+  </head>
+  <body class="mini-game-body">
+    <main class="mini-game-console">
+      <section class="mini-game-screen comic-game-screen" id="comic-game" data-mini-game="comic" aria-labelledby="comic-game-title">
+        <header class="comic-header">
+          <div>
+            <p class="welcome-label">Portal 02 · Comic Foreground</p>
+            <h1 id="comic-game-title">¡Caras a escena!</h1>
+            <p class="comic-intro">Lee las ruedas, prepara los dos disfraces y acierta antes del photocall.</p>
+          </div>
+          <a class="back-to-fair" href="../index.html">Volver a la feria</a>
+        </header>
+
+        <div class="comic-game-layout">
+          <section class="prediction-panel prediction-panel--feet" aria-labelledby="feet-wheel-title">
+            <h2 id="feet-wheel-title">Rueda de pies</h2>
+            <p class="prediction-hint">Fíjate en el personaje que entra en el próximo shoot.</p>
+            <div class="wheel-window">
+              <div class="wheel-art" id="current-feet"></div>
+              <strong id="current-feet-name"></strong>
+              <span>Ahora</span>
+            </div>
+            <div class="forecast-window">
+              <span class="prediction-pulse" id="feet-shoot-pulse">Próximo shoot</span>
+              <div class="wheel-art wheel-art--forecast" id="forecast-feet"></div>
+              <strong id="forecast-feet-name"></strong>
+            </div>
+          </section>
+
+          <section class="booth-panel" aria-label="Photocall de parejas">
+            <div class="booth-topline">
+              <span class="pulse-counter" id="pulse-counter">Pulso 0</span>
+              <span class="score-counter">Puntos <strong id="score">0</strong></span>
+            </div>
+
+            <div class="shoot-countdown" aria-live="polite">
+              <strong id="shoot-countdown-label">Shoot en 3 pulsos</strong>
+              <div class="shoot-progress" role="progressbar" aria-label="Tiempo hasta el próximo photocall" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <span id="shoot-progress-fill"></span>
+              </div>
+              <span id="clock-note">Cuenta atrás: 8 s</span>
+            </div>
+
+            <div class="shoot-clue" id="shoot-clue">
+              Pista del próximo photocall: observa qué tienen en común los dos personajes.
+            </div>
+
+            <div class="photo-stage" id="photo-stage" data-result="neutral" aria-label="Photocall con dos huecos">
+              <div class="stage-flash" aria-hidden="true"></div>
+              <div class="photo-pair">
+                <div class="photo-character" id="photo-left" aria-label="Personaje del hueco izquierdo">
+                  <div class="photo-head" id="photo-left-head"></div>
+                  <div class="photo-costume" id="photo-left-costume"></div>
+                  <div class="photo-feet" id="photo-left-feet"></div>
+                </div>
+                <div class="photo-character" id="photo-right" aria-label="Personaje del hueco derecho">
+                  <div class="photo-head" id="photo-right-head"></div>
+                  <div class="photo-costume" id="photo-right-costume"></div>
+                  <div class="photo-feet" id="photo-right-feet"></div>
+                </div>
+              </div>
+              <div class="stage-caption" id="stage-caption">¡Busca la pareja!</div>
+            </div>
+
+            <div class="costume-wheels" aria-label="Ruedas independientes de disfraces">
+              <section class="costume-wheel" aria-labelledby="costume-left-title">
+                <h3 id="costume-left-title">Disfraz · hueco izquierdo</h3>
+                <div class="costume-window">
+                  <button class="game-button game-button--wheel" id="costume-left-previous" type="button" aria-label="Disfraz izquierdo anterior">‹</button>
+                  <div class="costume-preview" id="costume-left-preview"></div>
+                  <button class="game-button game-button--wheel" id="costume-left-next" type="button" aria-label="Disfraz izquierdo siguiente">›</button>
+                </div>
+                <strong class="costume-name" id="costume-left-name"></strong>
+              </section>
+              <section class="costume-wheel" aria-labelledby="costume-right-title">
+                <h3 id="costume-right-title">Disfraz · hueco derecho</h3>
+                <div class="costume-window">
+                  <button class="game-button game-button--wheel" id="costume-right-previous" type="button" aria-label="Disfraz derecho anterior">‹</button>
+                  <div class="costume-preview" id="costume-right-preview"></div>
+                  <button class="game-button game-button--wheel" id="costume-right-next" type="button" aria-label="Disfraz derecho siguiente">›</button>
+                </div>
+                <strong class="costume-name" id="costume-right-name"></strong>
+              </section>
+            </div>
+
+            <p class="result-message" id="result-message" aria-live="polite">Adivina qué personajes coincidirán y prepara los dos disfraces.</p>
+
+            <div class="round-controls">
+              <button class="game-button" id="advance-round" type="button">Siguiente pulso</button>
+              <button class="game-button game-button--quiet" id="pause-game" type="button" aria-pressed="false">Pausar</button>
+              <button class="game-button game-button--quiet" id="restart-game" type="button">Reiniciar</button>
+            </div>
+          </section>
+
+          <section class="prediction-panel prediction-panel--heads" aria-labelledby="heads-wheel-title">
+            <h2 id="heads-wheel-title">Rueda de cabezas</h2>
+            <p class="prediction-hint">Su rueda tiene un ritmo distinto al de los pies.</p>
+            <div class="wheel-window">
+              <div class="wheel-art" id="current-head"></div>
+              <strong id="current-head-name"></strong>
+              <span>Ahora</span>
+            </div>
+            <div class="forecast-window">
+              <span class="prediction-pulse" id="heads-shoot-pulse">Próximo shoot</span>
+              <div class="wheel-art wheel-art--forecast" id="forecast-head"></div>
+              <strong id="forecast-head-name"></strong>
+            </div>
+          </section>
+        </div>
+
+        <p class="game-instructions">
+          Las ruedas de personajes tienen ritmos distintos; los disfraces giran con cada pulso hasta que los cambies. Al mover un selector, queda fijado hasta el siguiente shoot. Usa ←/→ para el hueco izquierdo, ↑/↓ para el derecho y Espacio para avanzar.
+        </p>
+      </section>
+    </main>
+    <div class="flower-transition-backdrop" aria-hidden="true"></div>
+    <div class="flower-curtain flower-curtain--left" aria-hidden="true"><img src="../assets/flower-curtain.svg" alt=""></div>
+    <div class="flower-curtain flower-curtain--right" aria-hidden="true"><img src="../assets/flower-curtain.svg" alt=""></div>
+    <script type="module" src="comic-game.js"></script>
+  </body>
+</html>

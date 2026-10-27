@@ -4,7 +4,8 @@ export function createPortals({
   promptElement,
   statusElement,
   initialPortalId,
-  onBeforeNavigate
+  onBeforeNavigate,
+  onAttractionVisited = () => {}
 }) {
   const portals = [...viewport.querySelectorAll("[data-portal][data-po-id]")];
   const artworkLayers = [...viewport.querySelectorAll(".po-art[data-po-id]")];
@@ -17,6 +18,10 @@ export function createPortals({
 
   function portalName(portal) {
     return portal.querySelector("span:last-child")?.textContent?.trim() ?? portal.dataset.portal;
+  }
+
+  function getPlayerAreaId(position = player.getPosition()) {
+    return portals.find((portal) => isPlayerInside(portal, position))?.dataset.poId ?? null;
   }
 
   function isPlayerInside(portal, position) {
@@ -100,6 +105,7 @@ export function createPortals({
   function navigate(portal) {
     if (navigationStarted) return;
     navigationStarted = true;
+    onAttractionVisited(portal.dataset.poId);
     onBeforeNavigate();
     document.body.classList.add("is-leaving");
     window.setTimeout(() => window.location.assign(portal.href), 560);
@@ -151,6 +157,7 @@ export function createPortals({
     update,
     moveSelection,
     enterSelected,
+    getPlayerAreaId,
     getSelectedPortalId: () => selectedPortal?.dataset.portal ?? null
   };
 }
