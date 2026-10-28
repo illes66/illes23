@@ -28,6 +28,7 @@ export function createPortals({
     ?? portals[0]
     ?? null;
   let selectedManually = false;
+  let selectionHighlightActive = false;
   let navigationStarted = false;
 
   function portalName(portal) {
@@ -58,6 +59,12 @@ export function createPortals({
     }
   }
 
+  function updateSelectionHighlight() {
+    for (const portal of portals) {
+      setPOState(portal, "is-selected", selectionHighlightActive && portal === selectedPortal);
+    }
+  }
+
   function select(portal, manual = false) {
     selectedPortal = portal;
     selectedManually = manual;
@@ -68,15 +75,15 @@ export function createPortals({
 
     portals.forEach((item) => {
       const isSelected = item === selectedPortal;
-      item.classList.toggle("is-selected", isSelected);
       if (isSelected) item.setAttribute("aria-current", "location");
       else item.removeAttribute("aria-current");
-      setPOState(item, "is-selected", isSelected);
     });
+    updateSelectionHighlight();
   }
 
   function moveSelection(action) {
     if (portals.length === 0) return;
+    selectionHighlightActive = true;
     const currentIndex = portals.indexOf(selectedPortal);
     const direction = action === "portal-previous" ? -1 : 1;
     const nextIndex = currentIndex === -1
@@ -84,6 +91,12 @@ export function createPortals({
       : (currentIndex + direction + portals.length) % portals.length;
     select(portals[nextIndex], true);
     update();
+  }
+
+  function clearSelectionHighlight() {
+    selectionHighlightActive = false;
+    selectedManually = false;
+    updateSelectionHighlight();
   }
 
   function update() {
@@ -98,17 +111,21 @@ export function createPortals({
     }
 
     if (!selectedPortal) {
-      promptElement.textContent = "Use the left pad to choose an attraction.";
+      if (promptElement) promptElement.textContent = "Use the left pad to choose an attraction.";
       statusElement.textContent = "The fair is waiting for you";
       return;
     }
 
     const name = portalName(selectedPortal);
     if (isPlayerInside(selectedPortal, position)) {
-      promptElement.textContent = `${name} area. Click its highlighted entrance or press Space / the center button to enter.`;
+      if (promptElement) {
+        promptElement.textContent = `${name} area. Click its highlighted entrance or press Space / the center button to enter.`;
+      }
       statusElement.textContent = `Explore ${name}`;
     } else {
-      promptElement.textContent = `${name} selected. Click its highlighted entrance or press Space / the center button to enter.`;
+      if (promptElement) {
+        promptElement.textContent = `${name} selected. Click its highlighted entrance or press Space / the center button to enter.`;
+      }
       statusElement.textContent = `Selected: ${name}`;
     }
   }
@@ -154,6 +171,7 @@ export function createPortals({
   return {
     update,
     moveSelection,
+    clearSelectionHighlight,
     enterSelected,
     getPlayerAreaId,
     getSelectedPortalId: () => selectedPortal?.dataset.portal ?? null

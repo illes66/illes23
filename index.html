@@ -15,7 +15,7 @@
     <main class="console-shell" aria-label="Illes 23 Fair handheld console">
       <aside class="console-side console-side--left" aria-label="Portal selection and asset information">
         <section class="controls-panel">
-          <h2 class="side-heading">Select portal</h2>
+          <h2 class="side-heading">Portals</h2>
           <div class="console-controller console-controller--portal" role="group" aria-label="Portal selection pad">
             <div class="control-pad">
               <!-- The shared SVG is loaded inline so its directional shadows can be animated. -->
@@ -28,7 +28,7 @@
               </div>
             </div>
           </div>
-          <p class="control-hint">W/A/S/D or left pad: select PO · center: enter</p>
+          <p class="control-hint">UI Selection</p>
         </section>
         <section class="side-panel dev-panel" aria-label="Development asset details">
           <h2 class="side-heading">Asset log</h2>
@@ -64,17 +64,18 @@
                      and add data-fair-asset="sun", "ferris-wheel", or "pagoda"; rules are in js/fair-scene-animator.js. -->
                 <g data-art-src="backgrounds.svg" transform="translate(300 0)"></g>
                 <!-- Main path size/position: change translate(X Y) to move it and scale(X Y)
-                     to set width/height. Increase the second scale value to make it taller. -->
-                <g data-art-src="WalkingPath&amp;Islandfence.svg" transform="translate(-175 20) scale(1.15 1.15)"></g>
+                     to set width/height. Fence flowers inherit this exact transform in fair-map.js. -->
+                <g data-art-src="WalkingPath&amp;Islandfence.svg" transform="translate(-425 -5) scale(1.25 1.25)"></g>
                 <g class="po-art" data-po-id="PO04_LakeTour" data-art-src="PO_04_LakeTour.svg" transform="translate(300 55)"></g>
                 <g class="po-art" data-po-id="PO07_FotoShootArea" data-art-src="PO_07_FotoShootArea.svg" transform="translate(605 75)"></g>
                 <g class="po-art" data-po-id="PO05_TeatrinoArea" data-art-src="PO_05_TeatrinoArea.svg" transform="translate(955 115)"></g>
                 <g class="po-art" data-po-id="PO03_CircusFishingGameArea" data-art-src="PO_03_CircusFishingGameArea.svg" transform="translate(340 320)"></g>
                 <g class="po-art" data-po-id="PO02_ComicForeground" data-art-src="PO_02_ComicForeground.svg" transform="translate(245 500)"></g>
-                <g class="po-art" data-po-id="PO00_EntranceArea" data-art-src="PO_00_EntranceArea.svg" transform="translate(710 450)"></g>
-                <g class="po-art" data-po-id="PO06_BenchArea" data-art-src="PO_06_BenchArea.svg" transform="translate(1290 510)"></g>
+                <g class="po-art" data-po-id="PO00_EntranceArea" data-art-src="PO_00_EntranceArea.svg" transform="translate(820 600)"></g>
+                <g class="po-art" data-po-id="PO06_BenchArea" data-art-src="PO_06_BenchArea.svg" transform="translate(1390 110)"></g>
                 <g class="po-art" data-po-id="PO08_CafeteriaArea" data-art-src="PO_08_CafeteriaArea.svg" transform="translate(1250 500)"></g>
-                <g id="fence-flowers" transform="translate(-175 20) scale(1.05 0.84)"></g>
+                <!-- Keep this group untransformed: fair-map.js syncs it to the main walking-path transform above. -->
+                <g id="fence-flowers"></g>
                 <g id="po-fence-flowers"></g>
               </svg>
 
@@ -144,7 +145,7 @@
             <div class="welcome-overlay" id="welcome-overlay">
               <p class="welcome-label">Welcome to</p>
               <h1>Illes 23 Fair</h1>
-              <p>Choose a path, find a portal, and step into a story.</p>
+              <p>A mini games</p>
               <button class="enter-button" id="enter-fair" type="button">Enter the fair</button>
             </div>
 
@@ -164,19 +165,20 @@
             <div class="flower-curtain flower-curtain--right" id="flower-right" aria-hidden="true">
               <img src="assets/flower-curtain.svg" alt="">
             </div>
-            <p class="portal-prompt" id="portal-prompt" aria-live="polite">Select a PO, then click its highlighted entrance or press Space / center to enter.</p>
+            <!--<p class="portal-prompt" id="portal-prompt" aria-live="polite">Select a PO, then click its highlighted entrance or press Space / center to enter.</p>
+          -->
           </section>
         </div>
 
         <footer class="screen-footer">
-          <span>W / A / S / D · LEFT PAD: SELECT PORTAL</span>
-          <span>ARROWS / RIGHT PAD: MOVE · SPACE / CENTER: ENTER SELECTED PO</span>
+          <!--<span>UI Portal Selection ← ↑ ↓ →</span>
+          <span>Player Map ← ↑ ↓ → </span>-->
         </footer>
       </section>
 
       <aside class="console-side console-side--right" aria-label="Player movement and asset information">
         <section class="controls-panel">
-          <h2 class="side-heading">Move player</h2>
+          <h2 class="side-heading">Player   </h2>
           <div class="console-controller console-controller--player" role="group" aria-label="Player movement pad">
             <div class="control-pad">
               <div class="control-hit-targets">
@@ -188,7 +190,7 @@
               </div>
             </div>
           </div>
-          <p class="control-hint">Arrows or right pad: move · center: enter selected PO</p>
+          <p class="control-hint"> ← ↑ ↓ →</p>
         </section>
         <section class="side-panel dev-panel" aria-label="Asset tracker connection">
           <h2 class="side-heading">Tracker</h2>

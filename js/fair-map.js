@@ -1,10 +1,14 @@
 const ARTWORK_SELECTOR = "[data-art-src]";
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-// Add new flower PNGs here; the eight instances cycle through the configured assets.
+// Main fence animation: FLOWER_COUNT sets spacing, PATH_FLOWER_SIZE sets PNG size,
+// PATH_FLOWER_SPEED sets travel speed in SVG units/ms, and FLOWER_ASSETS selects the PNGs.
 const FLOWER_ASSETS = ["rosa.png.png"];
 const FLOWER_COUNT = 8;
 const PATH_FLOWER_SIZE = 96;
+const PATH_FLOWER_SPEED = 0.025;
 const PO_FLOWER_SIZE = 88;
+// The walking-path SVG's yellow <use> references the fence path; update this selector if its export changes.
+const WALKING_PATH_FENCE_SELECTOR = 'use[fill="#FDD423"]';
 const PO_OUTLINE_FALLBACKS = {
   PO06_BenchArea: "M1290 510H1460V669H1290Z",
   PO07_FotoShootArea: "M605 75H763V232H605Z"
@@ -77,8 +81,8 @@ function addWalkableShapes(source, artLayer, walkableLayer, outlineLayer) {
   const poId = artLayer.dataset.poId;
   const isWalkingPath = artLayer.dataset.artSrc === "WalkingPath&Islandfence.svg";
   const greenUses = [...source.querySelectorAll('use[fill="#51743B"]')];
-  const yellowUse = source.querySelector('use[fill="#FDD423"]');
-  const uses = isWalkingPath ? [yellowUse].filter(Boolean) : greenUses;
+  const walkingPathFence = source.querySelector(WALKING_PATH_FENCE_SELECTOR);
+  const uses = isWalkingPath ? [walkingPathFence].filter(Boolean) : greenUses;
 
   for (const useElement of uses) {
     const referencedPath = findReferencedPath(source, useElement);
@@ -110,11 +114,11 @@ function addWalkableShapes(source, artLayer, walkableLayer, outlineLayer) {
 }
 
 function addFenceFlowers(source, flowerLayer) {
-  const candidatePaths = [...source.querySelectorAll("path[d]")]
-    .filter((path) => path.getAttribute("d").length < 2000)
-    .sort((first, second) => second.getAttribute("d").length - first.getAttribute("d").length);
-  const fencePath = candidatePaths[0];
-  if (!fencePath) throw new Error("The walking-path SVG does not contain a usable fence path.");
+  const fenceUse = source.querySelector(WALKING_PATH_FENCE_SELECTOR);
+  if (!fenceUse) {
+    throw new Error(`The walking-path SVG is missing its fence reference (${WALKING_PATH_FENCE_SELECTOR}).`);
+  }
+  const fencePath = findReferencedPath(source, fenceUse);
 
   const path = document.importNode(fencePath, false);
   path.setAttribute("class", "flower-motion-path");
@@ -141,7 +145,7 @@ function addFenceFlowers(source, flowerLayer) {
   return (timestamp) => {
     for (const flower of flowers) {
       const offset = Number(flower.dataset.flowerIndex) / flowers.length;
-      const distance = (timestamp * 0.025 + offset * length) % length;
+      const distance = (timestamp * PATH_FLOWER_SPEED + offset * length) % length;
       const point = path.getPointAtLength(distance);
       const halfSize = PATH_FLOWER_SIZE / 2;
       flower.setAttribute("x", String(point.x - halfSize));
@@ -240,6 +244,9 @@ export async function loadFairMapArtwork() {
     }
 
     if (assetPath === "WalkingPath&Islandfence.svg") {
+      // Keep flowers in the same transformed SVG coordinates as the rendered path.
+      // When the path moves or scales, change its transform in index.html only.
+      flowerLayer.setAttribute("transform", artLayer.getAttribute("transform") ?? "");
       updateFlowers = addFenceFlowers(source, flowerLayer);
     }
   }));

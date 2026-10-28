@@ -145,10 +145,14 @@ function handleConfirm() {
 createInputHandler({
   root: document,
   onMove(direction, pressed) {
-    if (appState.screen === "fair") player.setDirection(direction, pressed);
+    if (appState.screen === "fair") {
+      if (pressed) portals.clearSelectionHighlight();
+      player.setDirection(direction, pressed);
+    }
   },
   onMapClick(event) {
     if (appState.screen === "fair") {
+      portals.clearSelectionHighlight();
       player.moveToScreenPoint(event.clientX, event.clientY);
     }
   },

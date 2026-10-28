@@ -41,9 +41,9 @@ button {
 .console-shell {
   /* Console size/shape: adjust the 16/9 ratio and width/height caps together.
      Side-pad widths are the first/last grid columns; the center column gets the rest. */
-  width: min(100%, 1920px, calc((100dvh - 16px) * 16 / 9));
-  height: min(calc(100dvh - 16px), calc(100vw * 9 / 16));
-  aspect-ratio: 16 / 9;
+  width: min(100%, 1920px, calc((100dvh - 16px) * 18 / 9));
+  height: min(calc(100dvh - 16px), calc(100vw * 9 / 18));
+  aspect-ratio: 18 / 9;
   display: grid;
   grid-template-columns: clamp(105px, 10.5vw, 175px) minmax(0, 1fr) clamp(105px, 10.5vw, 175px);
   align-items: stretch;
@@ -704,12 +704,7 @@ body[data-mode="dev"] .dev-panel {
   }
 
   .control-hint {
-    max-width: 168px;
-    margin: 0;
-    display: block;
-    font-size: 0.68rem;
-    line-height: 1.25;
-    text-align: center;
+    display: none;
   }
 
   .screen-frame {

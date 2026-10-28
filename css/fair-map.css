@@ -9,11 +9,11 @@
   aspect-ratio: 1806 / 1013;
   overflow: hidden;
   isolation: isolate;
-  --game-sky: #fbddd9;
+  --game-sky: #d6e0ba;
   --game-sea: #b0dfe0;
-  --game-sand: #f0d8a8;
+  --game-sand: #e49b7a;
   /* Edit these colors and stops to tune the sky/sea/sand palette and their canvas heights. */
-  --game-sky-end: 36%;
+  --game-sky-end: 16%;
   --game-sea-end: 88%;
   background: linear-gradient(
     var(--game-sky) 0 var(--game-sky-end),
@@ -222,6 +222,7 @@
   animation-duration: 5.8s;
 }
 
+/* JS clones the fence path for motion and syncs its transform to the walking-path artwork in index.html. */
 .flower-motion-path {
   visibility: hidden;
 }
