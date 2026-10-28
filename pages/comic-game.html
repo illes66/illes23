@@ -11,18 +11,34 @@
     <link rel="stylesheet" href="../css/comic-game.css">
   </head>
   <body class="mini-game-body">
-    <main class="mini-game-console">
-      <section class="mini-game-screen comic-game-screen" id="comic-game" data-mini-game="comic" aria-labelledby="comic-game-title">
-        <header class="comic-header">
-          <div>
-            <p class="welcome-label">Portal 02 · Comic Foreground</p>
-            <h1 id="comic-game-title">¡Caras a escena!</h1>
-            <p class="comic-intro">Lee las ruedas, prepara los dos disfraces y acierta antes del photocall.</p>
+    <main class="mini-game-console console-shell" data-mini-game="comic">
+      <aside class="console-side console-side--left" aria-label="Comic attraction details">
+        <section class="side-panel mini-game-side-panel">
+          <h2 class="side-heading">Portal 02</h2>
+          <p>Comic Foreground</p>
+        </section>
+      </aside>
+      <section class="console-main mini-game-main" aria-label="Comic Foreground game screen">
+        <header class="screen-header">
+          <a class="brand" href="../index.html" aria-label="Illes 23 Fair home">
+            <img class="brand-sign" src="../UILetterSignCombo.svg" alt="">
+            <span class="brand-title">ILLES <span>23</span> FAIR</span>
+          </a>
+          <div class="screen-tools">
+            <p class="screen-status">Comic Foreground</p>
+            <a class="mini-game-return" href="../index.html">Return to fair</a>
           </div>
-          <a class="back-to-fair" href="../index.html">Volver a la feria</a>
         </header>
+        <section class="mini-game-screen comic-game-screen" id="comic-game" data-mini-game="comic" aria-labelledby="comic-game-title">
+          <header class="comic-header">
+            <div>
+              <p class="welcome-label">Portal 02 · Comic Foreground</p>
+              <h1 id="comic-game-title">¡Caras a escena!</h1>
+              <p class="comic-intro">Lee las ruedas, prepara los dos disfraces y acierta antes del photocall.</p>
+            </div>
+          </header>
 
-        <div class="comic-game-layout">
+          <div class="comic-game-layout">
           <section class="prediction-panel prediction-panel--feet" aria-labelledby="feet-wheel-title">
             <h2 id="feet-wheel-title">Rueda de pies</h2>
             <p class="prediction-hint">Fíjate en el personaje que entra en el próximo shoot.</p>
@@ -36,7 +52,7 @@
               <div class="wheel-art wheel-art--forecast" id="forecast-feet"></div>
               <strong id="forecast-feet-name"></strong>
             </div>
-          </section>
+            </section>
 
           <section class="booth-panel" aria-label="Photocall de parejas">
             <div class="booth-topline">
@@ -123,6 +139,17 @@
           Las ruedas de personajes tienen ritmos distintos; los disfraces giran con cada pulso hasta que los cambies. Al mover un selector, queda fijado hasta el siguiente shoot. Usa ←/→ para el hueco izquierdo, ↑/↓ para el derecho y Espacio para avanzar.
         </p>
       </section>
+        <footer class="screen-footer">
+          <span>COMIC FOREGROUND · PORTAL 02</span>
+          <span>ARROWS: SELECT COSTUMES · SPACE: ADVANCE</span>
+        </footer>
+      </section>
+      <aside class="console-side console-side--right" aria-label="Comic game controls">
+        <section class="side-panel mini-game-side-panel">
+          <h2 class="side-heading">Controls</h2>
+          <p>Use arrow keys to prepare both costumes, then press Space for the next pulse.</p>
+        </section>
+      </aside>
     </main>
     <div class="flower-transition-backdrop" aria-hidden="true"></div>
     <div class="flower-curtain flower-curtain--left" aria-hidden="true"><img src="../assets/flower-curtain.svg" alt=""></div>

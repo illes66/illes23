@@ -8,19 +8,142 @@
     <link rel="stylesheet" href="../css/console-ui.css">
     <link rel="stylesheet" href="../css/fair-map.css">
     <link rel="stylesheet" href="../css/mini-game-themes.css">
+    <link rel="stylesheet" href="../css/lake-tour.css">
   </head>
   <body class="mini-game-body">
-    <main class="mini-game-console">
-      <section class="mini-game-screen" id="lake-tour-game" data-mini-game="lake-tour" aria-labelledby="lake-tour-title">
-        <div class="mini-game-card">
-          <p class="welcome-label">Portal 01 · Attraction WIP</p>
-          <h1 id="lake-tour-title">Lake Tour</h1>
-          <p>This separate attraction page is ready for the reverse journey through Valencia: a pedal boat, illustrated environments, story moments, and water-side VFX.</p>
-          <!-- TODO: Add the lake scene and its attraction-specific input module here.
-               Keep shared console controls in a small shared script only when the mini-game needs them. -->
-          <a class="back-to-fair" href="../index.html">Return to the fair</a>
-        </div>
+    <main class="mini-game-console console-shell" data-mini-game="lake-tour">
+      <aside class="console-side console-side--left" aria-label="Lake Tour movement controls">
+        <section class="controls-panel">
+          <h2 class="side-heading">Explore the shore</h2>
+          <div class="console-controller" role="group" aria-label="Move Renata on shore">
+            <div class="control-pad">
+              <div class="control-hit-targets">
+                <button class="control-hit control-hit-up" type="button" data-lake-action="walk-up" aria-label="Walk up"></button>
+                <button class="control-hit control-hit-left" type="button" data-lake-action="walk-left" aria-label="Walk left"></button>
+                <button class="control-hit control-hit-center" type="button" data-lake-action="interact" aria-label="Board or leave the boat"></button>
+                <button class="control-hit control-hit-right" type="button" data-lake-action="walk-right" aria-label="Walk right"></button>
+                <button class="control-hit control-hit-down" type="button" data-lake-action="walk-down" aria-label="Walk down"></button>
+              </div>
+            </div>
+          </div>
+          <p class="control-hint">Walk around a stop; center to board or leave.</p>
+        </section>
+      </aside>
+
+      <section class="console-main mini-game-main" aria-label="Lake Tour game">
+        <header class="screen-header">
+          <a class="brand" href="../index.html" aria-label="Illes 23 Fair home">
+            <img class="brand-sign" src="../UILetterSignCombo.svg" alt="">
+            <span class="brand-title">ILLES <span>23</span> FAIR</span>
+          </a>
+          <div class="screen-tools">
+            <p class="screen-status">Lake Tour</p>
+            <a class="mini-game-return" href="../index.html">Return to fair</a>
+          </div>
+        </header>
+
+        <section class="mini-game-screen lake-tour-screen" id="lake-tour-game" data-mini-game="lake-tour" aria-labelledby="lake-tour-title">
+          <h1 class="lake-tour-visually-hidden" id="lake-tour-title">Lake Tour</h1>
+          <div class="lake-tour-game" tabindex="0" aria-label="Lake Tour. Use the arrow keys to travel and explore.">
+            <div class="lake-tour-hud">
+              <p class="lake-tour-phase" id="lake-tour-phase">En el embarcadero</p>
+              <p class="lake-tour-stop" id="lake-tour-stop" aria-live="polite">Parada 1 de 6 · Embarcadero</p>
+              <nav class="lake-tour-route" aria-label="Lake Tour stops">
+                <button type="button" data-lake-stop="0" aria-label="Go to stop 1, Embarcadero" aria-current="step">1</button>
+                <button type="button" data-lake-stop="1" aria-label="Go to stop 2, Juncos">2</button>
+                <button type="button" data-lake-stop="2" aria-label="Go to stop 3, Torres Blancas">3</button>
+                <button type="button" data-lake-stop="3" aria-label="Go to stop 4, Jardín del Turia">4</button>
+                <button type="button" data-lake-stop="4" aria-label="Go to stop 5, Pagoda">5</button>
+                <button type="button" data-lake-stop="5" aria-label="Go to stop 6, Atardecer">6</button>
+              </nav>
+            </div>
+
+            <div class="lake-tour-world" aria-hidden="true">
+              <section class="lake-stop" data-stop="0" style="left: 0%">
+                <p class="lake-horizon-caption">La ruta comienza junto al agua</p>
+                <!-- backgrounds.svg (1183x181) is used as a distant horizon layer, not a full-screen backdrop. -->
+                <img class="lake-horizon-art" src="../backgrounds.svg" alt="">
+                <div class="lake-dock"></div>
+              </section>
+              <section class="lake-stop" data-stop="1" style="left: 16.6667%">
+                <p class="lake-horizon-caption">El viento dibuja ondas entre los juncos</p>
+                <div class="lake-reeds" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="lake-dock"></div>
+              </section>
+              <section class="lake-stop" data-stop="2" style="left: 33.3333%">
+                <p class="lake-horizon-caption">Las Torres Blancas aparecen en el horizonte</p>
+                <div class="lake-tower-landmark">
+                  <img class="lake-tower-art" src="../TorresBlancas.svg" alt="">
+                  <svg class="lake-tower-outline" viewBox="0 0 207 343" aria-hidden="true">
+                    <!-- Mirrors the outer contour in TorresBlancas.svg; keep this path in sync with that asset. -->
+                    <path d="M4.16846 334.009L7.14147 267.662L14.6887 146.426L14.9643 140.413C10.538 134.651 7.03079 118.921 17.2456 114.223C-2.98236 98.1717 15.6109 65.1497 36.6321 85.7478L41.1209 84.905C45.9287 66.0937 67.9574 70.5485 71.8356 84.6664C72.3361 83.0117 74.4709 81.3344 76.6264 80.1874C78.8224 79.0189 81.04 78.4009 81.5727 78.9184L81.6564 77.749L81.7151 76.9272C81.7151 76.9272 84.1138 73.1511 89.0896 71.1748C91.436 70.2429 94.3555 69.7112 97.8668 70.1643C115.863 74.4577 108.505 100.509 103.879 103.466C107.303 105.555 108.854 113.212 107.852 119.626C107.633 121.029 106.286 122.743 106.274 122.858C106.006 125.457 105.004 127.253 100.934 130.801L101.944 143.33C102.77 143.09 106.465 142.684 108.918 146.169C109.292 147.977 109.593 150.986 109.457 152.891C109.399 146.012 102.205 147.26 102.27 147.108L102.798 152.298C102.798 152.223 108.013 151.993 109.352 154.856C110.913 158.194 109.754 162.898 109.777 161.527C109.893 154.735 102.946 156.361 102.946 156.361L103.443 161.766C103.455 161.896 109.583 161.826 110.281 164.581C110.909 167.057 111.024 170.526 110.789 169.787C110.31 168.284 109.115 165.617 103.813 165.365L104.008 171.312C104.008 171.312 110.458 172.146 111.107 174.367C111.599 176.051 111.276 181.359 111.258 180.525C111.134 174.848 105.802 174.534 104.167 175.374L104.743 181.69C104.696 181.177 110.364 181.906 111.637 184.141C112.659 185.935 111.597 191.297 111.763 190.561C112.993 185.094 104.753 186.015 104.679 185.735L104.987 191.891C105.005 192.236 110.873 191.021 112.527 194.416C113.458 196.325 112.766 200.039 112.766 200.039C112.553 195.272 106.641 195.846 105.582 195.954L105.899 202.419C105.91 202.642 113.061 201.862 113.485 206.239C113.704 208.498 114.212 210.428 112.987 211.552C115.184 207.744 108.871 206.303 106.648 206.833L106.643 213.726C106.643 213.785 114.406 213.605 114.321 217.381C114.28 219.223 114.787 222.256 113.461 222.234C116.032 218.651 107.069 216.83 107.124 218.687L107.311 225.019C107.311 225.019 110.729 223.996 115.036 227.366C115.036 227.366 115.356 231.111 114.963 232.594C114.691 233.616 110.111 236.287 107.873 235.77L109.966 273.699C112.52 273.322 117.361 273.476 118.092 275.191C118.764 277.616 118.057 279.911 117.785 280.098C115.849 281.429 110.901 281.761 110.62 281.589L110.783 286.882C111.009 286.146 118.466 286.087 118.777 287.607C118.777 287.607 119.849 292.723 118.237 292.72C118.237 292.72 116.678 290.929 110.894 291.409L111.432 299.668C113.154 299.576 117.216 298.824 119.645 300.435C119.496 300.217 120.12 305.401 119.577 305.214C115.702 303.874 111.683 304.273 111.761 304.938C111.776 305.069 111.842 312.304 111.899 313.458C113.279 312.788 120.584 313.693 120.635 313.974C121.018 316.104 120.754 318.523 120.754 318.523C119.444 319.48 112.405 318.821 112.405 318.821C112.424 322.499 112.333 327.338 112.862 327.316C120.909 326.977 120.949 326.942 120.949 326.942L121.168 331.878C120.732 332.663 113.033 332.424 113.033 332.424L113.234 338C113.234 338 36.8859 336.718 4.16846 334.009Z" />
+                  </svg>
+                </div>
+                <div class="lake-dock"></div>
+              </section>
+              <section class="lake-stop" data-stop="3" style="left: 50%">
+                <p class="lake-horizon-caption">Una pausa tranquila en el jardín del Turia</p>
+                <img class="lake-horizon-art lake-horizon-art--low" src="../backgrounds.svg" alt="">
+                <div class="lake-reeds" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="lake-dock"></div>
+              </section>
+              <section class="lake-stop" data-stop="4" style="left: 66.6667%">
+                <p class="lake-horizon-caption">Una pagoda espera al otro lado</p>
+                <!-- Replace this CSS silhouette with the Pagoda SVG when that asset is added. -->
+                <div class="lake-pagoda-placeholder" role="img" aria-label="Pagoda illustration placeholder">
+                  <span>Pagoda SVG pendiente</span>
+                </div>
+                <div class="lake-dock"></div>
+              </section>
+              <section class="lake-stop" data-stop="5" style="left: 83.3333%">
+                <p class="lake-horizon-caption">El cielo se tiñe de colores de atardecer</p>
+                <img class="lake-horizon-art lake-horizon-art--low" src="../backgrounds.svg" alt="">
+                <div class="lake-reeds" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="lake-dock"></div>
+              </section>
+
+              <div class="lake-boat" id="lake-boat">
+                <img src="../boat.png" alt="">
+                <!-- Renata.png (83x350, 16.9 KB) fits this ~40x165 CSS render at common 2x mobile density and saves 14.5 KB vs the 31.4 KB SVG. Its decoded RGBA image is about 114 KiB; a 4x4 sheet of these frames would use about 1.8 MiB before GPU overhead. Prefer SVG if future sizes exceed this raster source. -->
+                <img class="lake-player lake-player--boat" src="../Renata.png" alt="">
+              </div>
+              <img class="lake-player lake-player--shore" id="lake-player" src="../Renata.png" alt="Renata">
+            </div>
+
+            <div class="lake-tour-water" aria-hidden="true"></div>
+            <div class="lake-tour-message" id="lake-tour-message" aria-live="polite">
+              <strong>¡Bienvenida al Lake Tour!</strong>
+              <span>Confirma con el centro del pad o pulsa Espacio para subir a la barca.</span>
+            </div>
+            <div class="lake-tour-actions">
+              <button type="button" class="lake-interact-button" data-lake-action="interact">Subir a la barca</button>
+            </div>
+          </div>
+        </section>
+
+        <footer class="screen-footer">
+          <span>FLECHAS · RECORRER Y EXPLORAR</span>
+          <span>ESPACIO / CENTRO · SUBIR O BAJAR</span>
+        </footer>
       </section>
+
+      <aside class="console-side console-side--right" aria-label="Lake Tour route controls">
+        <section class="controls-panel">
+          <h2 class="side-heading">Navigate the lake</h2>
+          <div class="console-controller" role="group" aria-label="Choose a boat stop">
+            <div class="control-pad">
+              <div class="control-hit-targets">
+                <button class="control-hit control-hit-up" type="button" data-lake-action="boat-next" aria-label="Navigate to next stop"></button>
+                <button class="control-hit control-hit-left" type="button" data-lake-action="boat-previous" aria-label="Navigate to previous stop"></button>
+                <button class="control-hit control-hit-center" type="button" data-lake-action="interact" aria-label="Board or leave the boat"></button>
+                <button class="control-hit control-hit-right" type="button" data-lake-action="boat-next" aria-label="Navigate to next stop"></button>
+                <button class="control-hit control-hit-down" type="button" data-lake-action="boat-previous" aria-label="Navigate to previous stop"></button>
+              </div>
+            </div>
+          </div>
+          <p class="control-hint">On board: left / right to travel between stops.</p>
+        </section>
+      </aside>
     </main>
     <div class="flower-transition-backdrop" aria-hidden="true"></div>
     <div class="flower-curtain flower-curtain--left" aria-hidden="true"><img src="../assets/flower-curtain.svg" alt=""></div>

@@ -15,6 +15,7 @@ export function createPlayerController({
 }) {
   const position = { x: 50, y: 50 };
   const heldDirections = new Set();
+  let destination = null;
   const mapSvg = viewport.querySelector("#fair-art");
   if (!mapSvg) throw new Error("The fair map artwork is missing its coordinate reference.");
 
@@ -71,8 +72,26 @@ export function createPlayerController({
 
   function setDirection(direction, pressed) {
     if (!DIRECTION_VECTORS[direction]) return;
+    if (pressed) destination = null;
     if (pressed) heldDirections.add(direction);
     else heldDirections.delete(direction);
+  }
+
+  function moveToScreenPoint(clientX, clientY) {
+    const mapTransform = mapSvg.getScreenCTM();
+    if (!mapTransform) throw new Error("The fair map coordinate transform is unavailable.");
+
+    const viewBox = mapSvg.viewBox.baseVal;
+    const mapPoint = new DOMPoint(clientX, clientY).matrixTransform(mapTransform.inverse());
+    const target = clampPosition(
+      ((mapPoint.x - viewBox.x) / viewBox.width) * 100,
+      ((mapPoint.y - viewBox.y) / viewBox.height) * 100
+    );
+    if (!isWalkable(target.x, target.y)) return false;
+
+    heldDirections.clear();
+    destination = target;
+    return true;
   }
 
   function update(deltaSeconds) {
@@ -83,11 +102,30 @@ export function createPlayerController({
       vertical += DIRECTION_VECTORS[direction][1];
     }
 
+    const targetDistance = destination && heldDirections.size === 0
+      ? Math.hypot(destination.x - position.x, destination.y - position.y)
+      : null;
+    if (targetDistance !== null) {
+      if (targetDistance < 0.05) {
+        position.x = destination.x;
+        position.y = destination.y;
+        destination = null;
+        render();
+        return;
+      }
+      horizontal = (destination.x - position.x) / targetDistance;
+      vertical = (destination.y - position.y) / targetDistance;
+    }
+
     const magnitude = Math.hypot(horizontal, vertical);
     if (magnitude === 0) return;
 
     // The 0.05s delta cap prevents a long frame from causing a large movement jump.
-    const distance = (speed * Math.min(deltaSeconds, 0.05)) / magnitude;
+    const distance = Math.min(
+      speed * Math.min(deltaSeconds, 0.05),
+      targetDistance ?? Number.POSITIVE_INFINITY
+    ) / magnitude;
+    const previousPosition = { ...position };
     const next = clampPosition(
       position.x + (horizontal / magnitude) * distance,
       position.y + (vertical / magnitude) * distance
@@ -109,6 +147,9 @@ export function createPlayerController({
       }
     }
 
+    if (destination && position.x === previousPosition.x && position.y === previousPosition.y) {
+      destination = null;
+    }
     render();
   }
 
@@ -142,7 +183,8 @@ export function createPlayerController({
     getPosition,
     getBounds,
     setPosition,
-    isMoving: () => heldDirections.size > 0
+    moveToScreenPoint,
+    isMoving: () => heldDirections.size > 0 || destination !== null
   };
 }
 

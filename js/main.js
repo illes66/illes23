@@ -5,6 +5,7 @@ import { loadDirectionalPadArtwork } from "./console-ui.js";
 import { loadFairMapArtwork } from "./fair-map.js";
 import { createFairCamera } from "./fair-camera.js";
 import { FairSceneAnimator } from "./fair-scene-animator.js";
+import { createInteractiveAnimatedObjects } from "./interactive-animated-objects.js";
 
 const FAIR_STATE_KEY = "illes23-fair-position";
 
@@ -62,7 +63,7 @@ const player = createPlayerController({
   movementMode: "area"
 });
 player.setPosition(restoredState?.position ?? player.getPosition());
-const camera = createFairCamera({ viewport, world, player });
+const camera = createFairCamera({ viewport, world });
 const sceneAnimator = new FairSceneAnimator({ viewport, world });
 
 const portals = createPortals({
@@ -74,13 +75,25 @@ const portals = createPortals({
   onAttractionVisited(portalId) {
     sceneAnimator.onAttractionVisited(portalId);
   },
-  onBeforeNavigate() {
+  onBeforeNavigate(portal) {
+    const position = {
+      x: Number(portal.dataset.gateX),
+      y: Number(portal.dataset.gateY)
+    };
+    if (
+      !Number.isFinite(position.x) || position.x < 0 || position.x > 100
+      || !Number.isFinite(position.y) || position.y < 0 || position.y > 100
+    ) {
+      throw new Error(`Portal ${portal.dataset.poId} has invalid return coordinates.`);
+    }
+
     sessionStorage.setItem(FAIR_STATE_KEY, JSON.stringify({
-      position: player.getPosition(),
-      portalId: portals.getSelectedPortalId()
+      position,
+      portalId: portal.dataset.portal
     }));
   }
 });
+const interactiveObjects = createInteractiveAnimatedObjects({ root: viewport, player });
 let previousFrameTime = 0;
 
 if (restoredState) {
@@ -134,6 +147,11 @@ createInputHandler({
   onMove(direction, pressed) {
     if (appState.screen === "fair") player.setDirection(direction, pressed);
   },
+  onMapClick(event) {
+    if (appState.screen === "fair") {
+      player.moveToScreenPoint(event.clientX, event.clientY);
+    }
+  },
   onPortalNavigate(action) {
     portals.moveSelection(action);
   },
@@ -153,8 +171,8 @@ function frame(timestamp) {
   if (appState.screen === "fair") {
     player.update(deltaSeconds);
     portals.update();
+    interactiveObjects.update();
     fairMapArtwork.updateFlowers(timestamp);
-    camera.update(timestamp, player.isMoving());
     sceneAnimator.update(timestamp, portals.getPlayerAreaId());
   }
   window.requestAnimationFrame(frame);
@@ -162,8 +180,8 @@ function frame(timestamp) {
 
 window.requestAnimationFrame(frame);
 window.addEventListener("pagehide", () => {
-  camera.destroy();
   sceneAnimator.destroy();
+  interactiveObjects.destroy();
 }, { once: true });
 
 /*

@@ -37,7 +37,7 @@ function selectPadDirection(button) {
   button.classList.add("is-selected");
 }
 
-export function createInputHandler({ onMove, onPortalNavigate, onConfirm, root = document }) {
+export function createInputHandler({ onMove, onPortalNavigate, onConfirm, onMapClick = () => {}, root = document }) {
   const heldMoves = new Map();
   const pointerActions = new Map();
   const pointerTapTimers = new Map();
@@ -95,6 +95,7 @@ export function createInputHandler({ onMove, onPortalNavigate, onConfirm, root =
     }
 
     if ((event.code === "Space" || event.code === "Enter") && !event.repeat) {
+      if (event.target.closest?.("button, a")) return;
       event.preventDefault();
       pressedConfirmKeys.add(event.code);
       pressConfirm(root.querySelector('[data-action="confirm"]'));
@@ -142,15 +143,20 @@ export function createInputHandler({ onMove, onPortalNavigate, onConfirm, root =
 
   function onClick(event) {
     const button = event.target.closest?.('[data-action="confirm"], [data-action="portal-previous"], [data-action="portal-next"]');
-    if (!button || !root.contains(button)) return;
-    event.preventDefault();
+    if (button && root.contains(button)) {
+      event.preventDefault();
 
-    if (button.dataset.action === "confirm") {
-      pressConfirm(button);
+      if (button.dataset.action === "confirm") {
+        pressConfirm(button);
+        return;
+      }
+
+      navigatePortals(button.dataset.action, button.dataset.padDirection);
       return;
     }
 
-    navigatePortals(button.dataset.action, button.dataset.padDirection);
+    if (event.target.closest?.("button, a, .welcome-overlay, .flower-curtain")) return;
+    if (event.target.closest?.("#fair-viewport")) onMapClick(event);
   }
 
   function onPointerUp(event) {

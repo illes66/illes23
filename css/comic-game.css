@@ -1,11 +1,13 @@
 .comic-game-screen {
   width: 100%;
-  min-height: min(78vh, 820px);
+  min-height: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   gap: clamp(12px, 2vh, 20px);
   padding: clamp(14px, 2.5vw, 32px);
+  overflow: auto;
   text-align: left;
 }
 
@@ -102,6 +104,7 @@
 }
 
 .wheel-art {
+  /* Wheel art dimensions are driven by this clamp; adjust the forecast variant below separately. */
   position: relative;
   width: clamp(90px, 10vw, 138px);
   aspect-ratio: 1 / 1.2;
@@ -288,6 +291,7 @@
 }
 
 .asset-image {
+  /* Use contain for full transparent PNGs; use cover when the source art should fill/crop its slot. */
   position: absolute;
   inset: 0;
   width: 100%;
@@ -305,6 +309,7 @@
 }
 
 .photo-stage.is-shooting .stage-flash {
+  /* Keep the 520ms visual flash aligned with SHOOT_FLASH_MS in pages/comic-game.js. */
   animation: booth-flash 520ms ease-out;
 }
 
@@ -478,10 +483,6 @@
 }
 
 @media (max-width: 900px) {
-  .comic-game-screen {
-    min-height: 80vh;
-  }
-
   .comic-game-layout {
     grid-template-columns: minmax(125px, 0.7fr) minmax(270px, 1.5fr) minmax(125px, 0.7fr);
     gap: 7px;
@@ -495,7 +496,6 @@
 
 @media (max-width: 700px) {
   .comic-game-screen {
-    min-height: auto;
     padding: 16px;
   }
 
@@ -564,6 +564,7 @@
   }
 }
 
+/* Wheel preview PNG target sizes live here for phones; costume selector sizes are below. */
 @media (prefers-reduced-motion: reduce) {
   .shoot-progress span {
     transition: none;

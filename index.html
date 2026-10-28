@@ -22,13 +22,13 @@
               <div class="control-hit-targets">
                 <button class="control-hit control-hit-up" type="button" data-action="portal-previous" data-pad-direction="up" aria-label="Select previous portal"></button>
                 <button class="control-hit control-hit-left" type="button" data-action="portal-previous" data-pad-direction="left" aria-label="Select previous portal"></button>
-                <button class="control-hit control-hit-center" type="button" data-action="confirm" data-pad-direction="center" aria-label="Enter the selected portal when at its gate"></button>
+                <button class="control-hit control-hit-center" type="button" data-action="confirm" data-pad-direction="center" aria-label="Enter the selected PO"></button>
                 <button class="control-hit control-hit-right" type="button" data-action="portal-next" data-pad-direction="right" aria-label="Select next portal"></button>
                 <button class="control-hit control-hit-down" type="button" data-action="portal-next" data-pad-direction="down" aria-label="Select next portal"></button>
               </div>
             </div>
           </div>
-          <p class="control-hint">W/S select PO · center enters at its gate</p>
+          <p class="control-hint">W/A/S/D or left pad: select PO · center: enter</p>
         </section>
         <section class="side-panel dev-panel" aria-label="Development asset details">
           <h2 class="side-heading">Asset log</h2>
@@ -65,7 +65,7 @@
                 <g data-art-src="backgrounds.svg" transform="translate(300 0)"></g>
                 <!-- Main path size/position: change translate(X Y) to move it and scale(X Y)
                      to set width/height. Increase the second scale value to make it taller. -->
-                <g data-art-src="WalkingPath&amp;Islandfence.svg" transform="translate(-175 20) scale(1.05 0.84)"></g>
+                <g data-art-src="WalkingPath&amp;Islandfence.svg" transform="translate(-175 20) scale(1.15 1.15)"></g>
                 <g class="po-art" data-po-id="PO04_LakeTour" data-art-src="PO_04_LakeTour.svg" transform="translate(300 55)"></g>
                 <g class="po-art" data-po-id="PO07_FotoShootArea" data-art-src="PO_07_FotoShootArea.svg" transform="translate(605 75)"></g>
                 <g class="po-art" data-po-id="PO05_TeatrinoArea" data-art-src="PO_05_TeatrinoArea.svg" transform="translate(955 115)"></g>
@@ -94,31 +94,6 @@
                 <g id="po-outlines"></g>
               </svg>
 
-              <!-- Keep POs sorted by number. Zone and gate coordinates are percentages of this canvas. -->
-              <nav class="portal-layer" aria-label="Fair attractions">
-              <a class="portal" href="pages/comic-game.html" data-portal="PO02_ComicForeground" data-po-id="PO02_ComicForeground" data-gate-x="22" data-gate-y="68" data-zone-x="13" data-zone-y="50" data-zone-width="22" data-zone-height="38" style="--portal-x: 24%; --portal-y: 58%;">
-                <span class="portal-number">02</span><span>Comic</span>
-              </a>
-              <a class="portal portal--fishing" href="https://illes66.github.io/Fishes/" data-portal="PO03_CircusFishingGameArea" data-po-id="PO03_CircusFishingGameArea" data-gate-x="34" data-gate-y="45" data-zone-x="19" data-zone-y="32" data-zone-width="18" data-zone-height="19" style="--portal-x: 29%; --portal-y: 37%;">
-                <span class="portal-number">03</span><span>Circus · Fishing</span>
-              </a>
-              <a class="portal portal--lake" href="pages/lake-tour.html" data-portal="PO04_LakeTour" data-po-id="PO04_LakeTour" data-gate-x="38" data-gate-y="29" data-zone-x="17" data-zone-y="5" data-zone-width="32" data-zone-height="31" style="--portal-x: 34%; --portal-y: 20%;">
-                <span class="portal-number">04</span><span>Lake Tour</span>
-              </a>
-              <a class="portal portal--future" href="pages/attraction.html?po=PO05_TeatrinoArea" data-portal="PO05_TeatrinoArea" data-po-id="PO05_TeatrinoArea" data-gate-x="58" data-gate-y="42" data-zone-x="53" data-zone-y="11" data-zone-width="19" data-zone-height="36" style="--portal-x: 61%; --portal-y: 30%;">
-                <span class="portal-number">05</span><span>Teatrino</span>
-              </a>
-              <a class="portal portal--future" href="pages/attraction.html?po=PO06_BenchArea" data-portal="PO06_BenchArea" data-po-id="PO06_BenchArea" data-gate-x="75" data-gate-y="57" data-zone-x="71" data-zone-y="50" data-zone-width="12" data-zone-height="16" style="--portal-x: 77%; --portal-y: 57%;">
-                <span class="portal-number">06</span><span>Bench</span>
-              </a>
-              <a class="portal portal--future" href="pages/attraction.html?po=PO07_FotoShootArea" data-portal="PO07_FotoShootArea" data-po-id="PO07_FotoShootArea" data-gate-x="40" data-gate-y="18" data-zone-x="33" data-zone-y="7" data-zone-width="10" data-zone-height="16" style="--portal-x: 40%; --portal-y: 16%;">
-                <span class="portal-number">07</span><span>Photo Shoot</span>
-              </a>
-              <a class="portal portal--future" href="pages/attraction.html?po=PO08_CafeteriaArea" data-portal="PO08_CafeteriaArea" data-po-id="PO08_CafeteriaArea" data-gate-x="77" data-gate-y="69" data-zone-x="70" data-zone-y="66" data-zone-width="22" data-zone-height="22" style="--portal-x: 84%; --portal-y: 66%;">
-                <span class="portal-number">08</span><span>Cafeteria</span>
-              </a>
-              </nav>
-
               <div class="player-marker" id="player-marker" role="img" aria-label="Player character">
                 <!-- TODO: Replace this draft marker with a single transparent idle PNG.
                      For sprite animation, use a sprite-sheet background and select a row/frame
@@ -126,6 +101,45 @@
                 <span aria-hidden="true">✿</span>
               </div>
             </div>
+
+            <!-- Keep POs sorted by number. Zone and gate coordinates are percentages of this canvas. -->
+            <nav class="portal-layer" aria-label="Fair attractions">
+              <a class="portal interactive-animated-object" href="pages/comic-game.html" aria-label="Enter PO 02, Comic" data-interaction-x="22" data-interaction-y="68" data-interaction-radius="9" data-interaction-dialog="Enter the Comic attraction" data-portal="PO02_ComicForeground" data-po-id="PO02_ComicForeground" data-gate-x="22" data-gate-y="68" data-zone-x="13" data-zone-y="50" data-zone-width="22" data-zone-height="38" style="--portal-x: 24%; --portal-y: 58%;">
+                <img class="portal-sign-art" src="UILetterSignCombo.svg" alt="">
+                <span class="portal-sign-content"><span class="portal-number">02</span><span class="portal-name">Comic</span></span>
+                <span class="portal-confirm-cue" aria-hidden="true">ENTER</span>
+              </a>
+              <a class="portal portal--fishing interactive-animated-object" href="https://illes66.github.io/Fishes/" aria-label="Enter PO 03, Circus Fishing" data-interaction-x="34" data-interaction-y="45" data-interaction-radius="9" data-interaction-dialog="Enter the Circus Fishing attraction" data-portal="PO03_CircusFishingGameArea" data-po-id="PO03_CircusFishingGameArea" data-gate-x="34" data-gate-y="45" data-zone-x="19" data-zone-y="32" data-zone-width="18" data-zone-height="19" style="--portal-x: 29%; --portal-y: 37%;">
+                <img class="portal-sign-art" src="UILetterSignCombo.svg" alt="">
+                <span class="portal-sign-content"><span class="portal-number">03</span><span class="portal-name">Circus · Fishing</span></span>
+                <span class="portal-confirm-cue" aria-hidden="true">ENTER</span>
+              </a>
+              <a class="portal portal--lake interactive-animated-object" href="pages/lake-tour.html" aria-label="Enter PO 04, Lake Tour" data-interaction-x="38" data-interaction-y="29" data-interaction-radius="9" data-interaction-dialog="Enter the Lake Tour attraction" data-portal="PO04_LakeTour" data-po-id="PO04_LakeTour" data-gate-x="38" data-gate-y="29" data-zone-x="17" data-zone-y="5" data-zone-width="32" data-zone-height="31" style="--portal-x: 34%; --portal-y: 20%;">
+                <img class="portal-sign-art" src="UILetterSignCombo.svg" alt="">
+                <span class="portal-sign-content"><span class="portal-number">04</span><span class="portal-name">Lake Tour</span></span>
+                <span class="portal-confirm-cue" aria-hidden="true">ENTER</span>
+              </a>
+              <a class="portal portal--future interactive-animated-object" href="pages/attraction.html?po=PO05_TeatrinoArea" aria-label="Enter PO 05, Teatrino" data-interaction-x="58" data-interaction-y="42" data-interaction-radius="9" data-interaction-dialog="Enter the Teatrino attraction" data-portal="PO05_TeatrinoArea" data-po-id="PO05_TeatrinoArea" data-gate-x="58" data-gate-y="42" data-zone-x="53" data-zone-y="11" data-zone-width="19" data-zone-height="36" style="--portal-x: 61%; --portal-y: 30%;">
+                <img class="portal-sign-art" src="UILetterSignCombo.svg" alt="">
+                <span class="portal-sign-content"><span class="portal-number">05</span><span class="portal-name">Teatrino</span></span>
+                <span class="portal-confirm-cue" aria-hidden="true">ENTER</span>
+              </a>
+              <a class="portal portal--future interactive-animated-object" href="pages/attraction.html?po=PO06_BenchArea" aria-label="Enter PO 06, Bench" data-interaction-x="75" data-interaction-y="57" data-interaction-radius="9" data-interaction-dialog="Enter the Bench attraction" data-portal="PO06_BenchArea" data-po-id="PO06_BenchArea" data-gate-x="75" data-gate-y="57" data-zone-x="71" data-zone-y="50" data-zone-width="12" data-zone-height="16" style="--portal-x: 77%; --portal-y: 57%;">
+                <img class="portal-sign-art" src="UILetterSignCombo.svg" alt="">
+                <span class="portal-sign-content"><span class="portal-number">06</span><span class="portal-name">Bench</span></span>
+                <span class="portal-confirm-cue" aria-hidden="true">ENTER</span>
+              </a>
+              <a class="portal portal--future interactive-animated-object" href="pages/attraction.html?po=PO07_FotoShootArea" aria-label="Enter PO 07, Photo Shoot" data-interaction-x="40" data-interaction-y="18" data-interaction-radius="9" data-interaction-dialog="Enter the Photo Shoot attraction" data-portal="PO07_FotoShootArea" data-po-id="PO07_FotoShootArea" data-gate-x="40" data-gate-y="18" data-zone-x="33" data-zone-y="7" data-zone-width="10" data-zone-height="16" style="--portal-x: 40%; --portal-y: 16%;">
+                <img class="portal-sign-art" src="UILetterSignCombo.svg" alt="">
+                <span class="portal-sign-content"><span class="portal-number">07</span><span class="portal-name">Photo Shoot</span></span>
+                <span class="portal-confirm-cue" aria-hidden="true">ENTER</span>
+              </a>
+              <a class="portal portal--future interactive-animated-object" href="pages/attraction.html?po=PO08_CafeteriaArea" aria-label="Enter PO 08, Cafeteria" data-interaction-x="77" data-interaction-y="69" data-interaction-radius="9" data-interaction-dialog="Enter the Cafeteria attraction" data-portal="PO08_CafeteriaArea" data-po-id="PO08_CafeteriaArea" data-gate-x="77" data-gate-y="69" data-zone-x="70" data-zone-y="66" data-zone-width="22" data-zone-height="22" style="--portal-x: 84%; --portal-y: 66%;">
+                <img class="portal-sign-art" src="UILetterSignCombo.svg" alt="">
+                <span class="portal-sign-content"><span class="portal-number">08</span><span class="portal-name">Cafeteria</span></span>
+                <span class="portal-confirm-cue" aria-hidden="true">ENTER</span>
+              </a>
+            </nav>
 
             <div class="welcome-overlay" id="welcome-overlay">
               <p class="welcome-label">Welcome to</p>
@@ -150,13 +164,13 @@
             <div class="flower-curtain flower-curtain--right" id="flower-right" aria-hidden="true">
               <img src="assets/flower-curtain.svg" alt="">
             </div>
-            <p class="portal-prompt" id="portal-prompt" aria-live="polite">Select a portal, walk to its gate, then press center to enter.</p>
+            <p class="portal-prompt" id="portal-prompt" aria-live="polite">Select a PO, then click its highlighted entrance or press Space / center to enter.</p>
           </section>
         </div>
 
         <footer class="screen-footer">
-          <span>W / S · LEFT PAD: SELECT PORTAL</span>
-          <span>ARROWS / RIGHT PAD: MOVE · SPACE / CENTER: ENTER AT GATE</span>
+          <span>W / A / S / D · LEFT PAD: SELECT PORTAL</span>
+          <span>ARROWS / RIGHT PAD: MOVE · SPACE / CENTER: ENTER SELECTED PO</span>
         </footer>
       </section>
 
@@ -168,13 +182,13 @@
               <div class="control-hit-targets">
                 <button class="control-hit control-hit-up" type="button" data-action="move-up" data-pad-direction="up" aria-label="Move player up"></button>
                 <button class="control-hit control-hit-left" type="button" data-action="move-left" data-pad-direction="left" aria-label="Move player left"></button>
-                <button class="control-hit control-hit-center" type="button" data-action="confirm" data-pad-direction="center" aria-label="Enter the selected portal when at its gate"></button>
+                <button class="control-hit control-hit-center" type="button" data-action="confirm" data-pad-direction="center" aria-label="Enter the selected PO"></button>
                 <button class="control-hit control-hit-right" type="button" data-action="move-right" data-pad-direction="right" aria-label="Move player right"></button>
                 <button class="control-hit control-hit-down" type="button" data-action="move-down" data-pad-direction="down" aria-label="Move player down"></button>
               </div>
             </div>
           </div>
-          <p class="control-hint">Arrow keys to move · center to enter selected PO at its gate</p>
+          <p class="control-hint">Arrows or right pad: move · center: enter selected PO</p>
         </section>
         <section class="side-panel dev-panel" aria-label="Asset tracker connection">
           <h2 class="side-heading">Tracker</h2>

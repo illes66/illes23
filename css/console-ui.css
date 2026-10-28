@@ -70,13 +70,13 @@ button {
 
 .console-side--left {
   border-radius: 12px 0 0 12px;
-  background: linear-gradient(155deg, #a9d0a1, #42796f 72%);
+  background: linear-gradient(155deg, var(--console-highlight), var(--console-shell) 72%);
   box-shadow: inset 3px 0 8px rgba(255, 255, 255, 0.24), inset -3px 0 8px rgba(0, 0, 0, 0.13);
 }
 
 .console-side--right {
   border-radius: 0 12px 12px 0;
-  background: linear-gradient(205deg, #a9d0a1, #42796f 72%);
+  background: linear-gradient(205deg, var(--console-highlight), var(--console-shell) 72%);
   box-shadow: inset -3px 0 8px rgba(255, 255, 255, 0.24), inset 3px 0 8px rgba(0, 0, 0, 0.13);
 }
 
@@ -340,6 +340,7 @@ body[data-mode="dev"] .dev-panel {
 }
 
 .brand-sign {
+  /* Shared home/minigame SVG logo box; increase these bounds to enlarge the header artwork. */
   width: clamp(24px, 2.4vw, 36px);
   height: clamp(20px, 2vw, 30px);
   object-fit: contain;
@@ -395,15 +396,54 @@ body[data-mode="dev"] .dev-panel {
 }
 
 .mini-game-console {
+  /* Match the home console proportions and side-rail widths; tune both breakpoints below together. */
   width: min(100%, 1920px, calc((100dvh - 16px) * 16 / 9));
-  min-height: calc(100dvh - 16px);
+  height: min(calc(100dvh - 16px), calc(100vw * 9 / 16));
+  aspect-ratio: 16 / 9;
   display: grid;
+  grid-template-columns: clamp(105px, 10.5vw, 175px) minmax(0, 1fr) clamp(105px, 10.5vw, 175px);
   align-items: stretch;
-  padding: clamp(14px, 3vw, 36px);
+  gap: 0;
+  padding: clamp(5px, 0.8vw, 12px);
   border: 3px solid rgba(255, 255, 255, 0.76);
-  border-radius: clamp(22px, 3vw, 42px);
+  border-radius: clamp(18px, 2.5vw, 34px);
   background: linear-gradient(145deg, var(--console-highlight), var(--console-shell));
-  box-shadow: 0 24px 60px rgba(68, 49, 49, 0.28);
+  box-shadow: 0 24px 60px rgba(68, 49, 49, 0.28), inset 0 3px 8px rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+}
+
+.mini-game-main {
+  min-width: 0;
+  min-height: 0;
+}
+
+.mini-game-side-panel {
+  text-align: center;
+}
+
+.mini-game-side-panel p {
+  margin: 8px 0 0;
+  font-size: clamp(0.62rem, 0.8vw, 0.76rem);
+  line-height: 1.45;
+}
+
+.mini-game-return {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  background: #f9e7b6;
+  color: #493947;
+  font-size: clamp(0.62rem, 0.8vw, 0.75rem);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.mini-game-return:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
 }
 
 @media (max-width: 520px) {
@@ -527,5 +567,240 @@ body[data-mode="dev"] .dev-panel {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    padding: 6px;
+  }
+
+  .console-shell {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 8px;
+    padding: 8px;
+    overflow: visible;
+    border-radius: 20px;
+  }
+
+  .mini-game-console {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 8px;
+    padding: 8px;
+    overflow: visible;
+    border-radius: 20px;
+  }
+
+  .mini-game-main {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: 68dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mini-game-console .console-side {
+    grid-row: 2;
+    min-height: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+    padding: 7px 4px;
+    overflow: visible;
+    border-radius: 12px;
+  }
+
+  .mini-game-console .console-side--left {
+    grid-column: 1;
+  }
+
+  .mini-game-console .console-side--right {
+    grid-column: 2;
+  }
+
+  .mini-game-console .screen-header {
+    min-height: 40px;
+    gap: 6px;
+    padding-inline: 4px;
+  }
+
+  .mini-game-console .screen-status,
+  .mini-game-console .screen-footer {
+    display: none;
+  }
+
+  .mini-game-console .brand {
+    gap: 4px;
+    font-size: clamp(0.76rem, 3.6vw, 0.95rem);
+    letter-spacing: 0.03em;
+  }
+
+  .mini-game-console .brand-sign {
+    width: 24px;
+    height: 22px;
+  }
+
+  .mini-game-console .mini-game-side-panel p {
+    margin-top: 4px;
+    font-size: 0.7rem;
+  }
+
+  .mini-game-console .mini-game-return {
+    min-height: 36px;
+  }
+
+  .mini-game-console .side-heading {
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
+  .console-main {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: 0;
+    height: auto;
+    gap: 8px;
+  }
+
+  .screen-header {
+    min-height: 40px;
+    gap: 6px;
+    padding-inline: 4px;
+  }
+
+  .brand {
+    gap: 4px;
+    font-size: clamp(0.76rem, 3.6vw, 0.95rem);
+    letter-spacing: 0.03em;
+  }
+
+  .brand-sign {
+    width: 24px;
+    height: 22px;
+  }
+
+  .screen-tools {
+    gap: 0;
+  }
+
+  .mode-toggle {
+    display: none;
+  }
+
+  .screen-status,
+  .screen-footer {
+    display: none;
+  }
+
+  .control-hint {
+    max-width: 168px;
+    margin: 0;
+    display: block;
+    font-size: 0.68rem;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .screen-frame {
+    min-height: 0;
+    flex: none;
+    height: auto;
+    display: flex;
+  }
+
+  .console-side {
+    grid-row: 2;
+    min-height: 0;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 7px 4px;
+    overflow: visible;
+    border-radius: 12px;
+  }
+
+  .console-side--left {
+    grid-column: 1;
+  }
+
+  .console-side--right {
+    grid-column: 2;
+  }
+
+  .controls-panel {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .side-heading {
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
+  .console-controller {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .control-pad {
+    width: min(112px, 28vw);
+  }
+
+  .dev-panel {
+    display: none !important;
+  }
+
+  .welcome-overlay {
+    padding: 12px;
+  }
+
+  .welcome-overlay h1 {
+    font-size: clamp(1.35rem, 6vw, 2rem);
+  }
+
+  .welcome-overlay p {
+    font-size: 0.88rem;
+  }
+
+  .enter-button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 380px) {
+  .console-shell {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .mini-game-console {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .console-side {
+    padding-inline: 2px;
+  }
+
+  .side-heading {
+    font-size: 0.62rem;
+  }
+
+  .control-pad {
+    width: min(112px, 34vw);
   }
 }

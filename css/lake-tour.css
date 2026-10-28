@@ -1,0 +1,585 @@
+/* Lake Tour scene art, animation timing, and console controls are configured here.
+   Swap the commented placeholder styles for uploaded Pagoda/reed artwork when available.
+   These external SVGs are kept as <img> elements; CSS can animate their overall tint/glow,
+   but editing individual path fills/dashes requires inlining the SVG or using SVG symbols. */
+.mini-game-screen.lake-tour-screen {
+  position: relative;
+  min-height: 0;
+  flex: 1;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  border: 3px solid #f7e3b4;
+  background:
+    linear-gradient(180deg, #f8c997 0%, #efac97 30%, #5baeb5 75%, #d7bc83 100%);
+  color: #44334a;
+  text-align: left;
+  isolation: isolate;
+}
+
+.lake-tour-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.lake-tour-game {
+  /* Main lake palette is set in css/mini-game-themes.css. */
+  --lake-progress: 0;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  outline: none;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(255, 241, 190, 0.42), transparent 58%),
+    linear-gradient(180deg, var(--lake-sky) 0%, var(--lake-sunset) 37%, #9ac9c0 54%, #57b2be 78%, #d8bd8b 100%);
+  font-family: "Habibi", Georgia, serif;
+}
+
+.lake-tour-game:focus-visible {
+  outline: 3px solid #fff3c9;
+  outline-offset: -5px;
+}
+
+.lake-tour-hud {
+  position: absolute;
+  z-index: 8;
+  top: clamp(6px, 1.4vw, 14px);
+  left: 50%;
+  width: min(94%, 520px);
+  padding: clamp(6px, 1.1vw, 11px) clamp(9px, 1.6vw, 16px);
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 249, 218, 0.86);
+  border-radius: 16px;
+  background: rgba(67, 55, 75, 0.72);
+  color: #fff7dc;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(49, 43, 62, 0.22);
+  backdrop-filter: blur(4px);
+}
+
+.lake-tour-phase,
+.lake-tour-stop {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.lake-tour-phase {
+  color: #ffe9aa;
+  font-size: clamp(0.7rem, 1.25vw, 0.95rem);
+  font-weight: 700;
+}
+
+.lake-tour-stop {
+  font-size: clamp(0.76rem, 1.6vw, 1.1rem);
+  font-weight: 700;
+}
+
+.lake-tour-route {
+  display: flex;
+  justify-content: center;
+  gap: clamp(5px, 1.6vw, 12px);
+  margin-top: 6px;
+}
+
+.lake-tour-route button {
+  width: clamp(24px, 3.3vw, 32px);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid rgba(255, 247, 220, 0.7);
+  border-radius: 50%;
+  background: rgba(255, 243, 204, 0.16);
+  color: #fff9e9;
+  font-size: clamp(0.7rem, 1vw, 0.85rem);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.lake-tour-route button[aria-current="step"] {
+  transform: scale(1.13);
+  border-color: #fff2b5;
+  background: #e58b72;
+  box-shadow: 0 0 0 3px rgba(255, 240, 178, 0.25), 0 0 14px #ffe19a;
+}
+
+.lake-tour-route button:focus-visible,
+.lake-interact-button:focus-visible {
+  outline: 3px solid #fff6cf;
+  outline-offset: 3px;
+}
+
+.lake-tour-world {
+  position: absolute;
+  /* Keep the boat and shore character in front of the translucent animated water layer. */
+  z-index: 4;
+  inset: 0 auto 0 0;
+  width: 600%;
+  height: 100%;
+  transform: translate3d(0, 0, 0);
+  transition: filter 900ms ease;
+}
+
+.lake-tour-game[data-traveling="true"] .lake-tour-world {
+  /* Promote the very wide panorama only while it moves to avoid idle GPU texture memory. */
+  will-change: transform;
+}
+
+.lake-stop {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16.6667%;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 52% 56%, rgba(255, 228, 172, 0.46), transparent 50%),
+    linear-gradient(180deg, rgba(247, 200, 154, 0.08), rgba(107, 151, 127, 0.16));
+}
+
+.lake-stop:nth-child(even) {
+  background:
+    radial-gradient(ellipse at 40% 54%, rgba(247, 223, 173, 0.48), transparent 46%),
+    linear-gradient(180deg, rgba(233, 167, 146, 0.04), rgba(81, 135, 125, 0.2));
+}
+
+.lake-horizon-caption {
+  position: absolute;
+  top: 31%;
+  left: 50%;
+  width: 92%;
+  margin: 0;
+  transform: translateX(-50%);
+  color: rgba(96, 74, 90, 0.82);
+  font-size: clamp(0.72rem, 1.6vw, 1.2rem);
+  font-style: italic;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 246, 211, 0.75);
+  animation: lake-horizon-drift 5s ease-in-out infinite;
+}
+
+.lake-horizon-art {
+  position: absolute;
+  top: 39%;
+  left: 50%;
+  width: 92%;
+  max-height: 25%;
+  object-fit: contain;
+  transform: translateX(-50%);
+  opacity: 0.58;
+  filter: saturate(0.78) sepia(0.12);
+}
+
+.lake-horizon-art--low {
+  top: 44%;
+  opacity: 0.42;
+}
+
+.lake-tower-landmark {
+  position: absolute;
+  top: 17%;
+  left: 50%;
+  width: clamp(64px, 9vw, 100px);
+  aspect-ratio: 207 / 343;
+  transform: translateX(-50%);
+}
+
+.lake-tower-art,
+.lake-tower-outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.lake-tower-art {
+  object-fit: contain;
+  animation: lake-tower-sunset 7s ease-in-out infinite alternate;
+}
+
+.lake-tower-outline {
+  overflow: visible;
+  pointer-events: none;
+}
+
+.lake-tower-outline path {
+  fill: none;
+  stroke: #f7d99a;
+  stroke-dasharray: 12 8;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  animation: lake-tower-outline-dash 5s linear infinite alternate;
+}
+
+.lake-dock {
+  position: absolute;
+  z-index: 2;
+  right: 3%;
+  bottom: 23%;
+  width: 38%;
+  height: 4%;
+  border: 2px solid rgba(119, 89, 72, 0.65);
+  border-radius: 7px 7px 0 0;
+  background: repeating-linear-gradient(90deg, #b88862 0 17%, #d4a875 17% 20%);
+  box-shadow: 0 5px 0 rgba(76, 80, 71, 0.18);
+}
+
+.lake-stop:first-child .lake-dock {
+  right: 8%;
+  width: 48%;
+}
+
+.lake-reeds {
+  position: absolute;
+  z-index: 2;
+  bottom: 22%;
+  left: 7%;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(3px, 1vw, 11px);
+  height: 33%;
+  transform-origin: bottom center;
+  animation: lake-reeds-breeze 3.8s ease-in-out infinite alternate;
+}
+
+.lake-reeds i {
+  position: relative;
+  display: block;
+  width: 3px;
+  height: 70%;
+  border-radius: 100% 100% 0 0;
+  background: var(--lake-reed, #82945d);
+  transform-origin: bottom center;
+}
+
+.lake-reeds i:nth-child(2n) {
+  height: 96%;
+  animation: lake-reed-sway 2.8s ease-in-out infinite alternate;
+}
+
+.lake-reeds i:nth-child(3n) {
+  height: 82%;
+  animation: lake-reed-sway 3.4s ease-in-out -1s infinite alternate-reverse;
+}
+
+.lake-reeds i::before {
+  position: absolute;
+  top: -10px;
+  left: 0;
+  width: 3px;
+  height: 12px;
+  border-radius: 50%;
+  background: #786246;
+  content: "";
+}
+
+/* CSS silhouette placeholder: replace with the Pagoda SVG once it is in the assets folder. */
+.lake-pagoda-placeholder {
+  position: absolute;
+  top: 32%;
+  left: 50%;
+  width: clamp(74px, 12vw, 130px);
+  height: 26%;
+  transform: translateX(-50%);
+  color: rgba(108, 80, 85, 0.8);
+}
+
+.lake-pagoda-placeholder::before,
+.lake-pagoda-placeholder::after {
+  position: absolute;
+  left: 50%;
+  width: 100%;
+  height: 11%;
+  border: 2px dashed currentColor;
+  border-radius: 50% 50% 5px 5px;
+  background: rgba(227, 155, 124, 0.44);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.lake-pagoda-placeholder::before {
+  top: 30%;
+  box-shadow: 0 16px 0 -2px rgba(227, 155, 124, 0.56), 0 16px 0 0 currentColor;
+}
+
+.lake-pagoda-placeholder::after {
+  top: 5%;
+  width: 34%;
+  height: 78%;
+  border-width: 2px 2px 0;
+  border-radius: 40% 40% 0 0;
+  background: repeating-linear-gradient(180deg, transparent 0 23%, rgba(108, 80, 85, 0.5) 24% 26%);
+}
+
+.lake-pagoda-placeholder span {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: max-content;
+  transform: translateX(-50%);
+  font-size: 0.62rem;
+  font-style: italic;
+}
+
+.lake-boat {
+  position: absolute;
+  z-index: 4;
+  top: 59%;
+  left: 8.3333%;
+  width: clamp(112px, 24vw, 260px);
+  height: 34%;
+  transform: translateX(-50%);
+  transition: top 420ms ease;
+}
+
+.lake-boat > img:first-child {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 6px rgba(47, 76, 77, 0.28));
+}
+
+.lake-player {
+  position: absolute;
+  z-index: 2;
+  width: auto;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 2px 1px rgba(55, 51, 58, 0.24));
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lake-player--boat {
+  bottom: 16%;
+  left: 42%;
+  height: 69%;
+  transform: translateX(-50%);
+}
+
+.lake-player--shore {
+  z-index: 3;
+  bottom: 20%;
+  left: 8.3333%;
+  height: 38%;
+  transform: translateX(-50%);
+  transition: left 120ms linear, bottom 120ms linear;
+  visibility: hidden;
+}
+
+.lake-tour-game[data-phase="shore"] .lake-player--shore {
+  visibility: visible;
+  animation: lake-player-idle 2.4s ease-in-out infinite;
+}
+
+.lake-tour-game[data-phase="shore"] .lake-player--boat {
+  visibility: hidden;
+}
+
+.lake-tour-water {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 24%;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(176deg, transparent 0 15px, rgba(231, 248, 219, 0.22) 16px 18px, transparent 19px 31px),
+    linear-gradient(180deg, rgba(54, 158, 177, 0.72), var(--lake-water));
+  box-shadow: 0 -9px 22px rgba(240, 206, 155, 0.4);
+  animation: lake-water-shimmer 8s linear infinite;
+}
+
+.lake-tour-message {
+  position: absolute;
+  z-index: 6;
+  top: 45%;
+  left: 50%;
+  display: grid;
+  gap: 2px;
+  width: min(82%, 410px);
+  padding: 7px 12px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 248, 222, 0.78);
+  border-radius: 12px;
+  background: rgba(255, 247, 222, 0.88);
+  color: #4b3b4a;
+  box-shadow: 0 4px 12px rgba(58, 62, 68, 0.16);
+  pointer-events: none;
+}
+
+.lake-tour-message strong {
+  color: #874f61;
+  font-size: clamp(0.72rem, 1.2vw, 0.9rem);
+}
+
+.lake-tour-message span {
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  font-size: clamp(0.62rem, 1vw, 0.76rem);
+  line-height: 1.3;
+}
+
+.lake-tour-actions {
+  position: absolute;
+  z-index: 9;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.lake-interact-button {
+  min-height: 36px;
+  padding: 7px 13px;
+  border: 1px solid #fff2c9;
+  border-radius: 999px;
+  background: #684f71;
+  color: #fff8df;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  font-size: clamp(0.66rem, 1vw, 0.78rem);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(41, 40, 54, 0.28);
+}
+
+.lake-tour-game[data-phase="boat"] .lake-interact-button {
+  background: #b15f68;
+}
+
+.lake-tour-game[data-phase="shore"] .lake-interact-button {
+  background: #4f7561;
+}
+
+.lake-tour-game [data-lake-action],
+.lake-tour-route button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes lake-horizon-drift {
+  0%, 100% { margin-top: 0; opacity: 0.76; }
+  50% { margin-top: -6px; opacity: 1; }
+}
+
+@keyframes lake-tower-sunset {
+  from { filter: drop-shadow(0 0 3px rgba(255, 216, 163, 0.55)) sepia(0.12); }
+  to { filter: drop-shadow(0 0 12px rgba(241, 139, 151, 0.75)) hue-rotate(-14deg) sepia(0.35); }
+}
+
+@keyframes lake-tower-outline-dash {
+  from { stroke: #f7d99a; stroke-dashoffset: 0; }
+  to { stroke: #ee8299; stroke-dashoffset: -40; }
+}
+
+@keyframes lake-reeds-breeze {
+  from { transform: skewX(-4deg); }
+  to { transform: skewX(5deg); }
+}
+
+@keyframes lake-reed-sway {
+  from { transform: rotate(-5deg); }
+  to { transform: rotate(7deg); }
+}
+
+@keyframes lake-player-idle {
+  0%, 100% { margin-bottom: 0; }
+  50% { margin-bottom: 3px; }
+}
+
+@keyframes lake-water-shimmer {
+  to { background-position: 0 40px, 0 0; }
+}
+
+@media (max-width: 760px) {
+  .mini-game-screen.lake-tour-screen {
+    min-height: 52dvh;
+    flex: 1;
+    border-radius: 16px;
+  }
+
+  .lake-tour-hud {
+    width: 96%;
+    padding: 5px 7px;
+    border-radius: 11px;
+  }
+
+  .lake-tour-phase {
+    font-size: 0.64rem;
+  }
+
+  .lake-tour-stop {
+    font-size: 0.72rem;
+  }
+
+  .lake-tour-route {
+    gap: 7px;
+    margin-top: 4px;
+  }
+
+  .lake-tour-route button {
+    width: clamp(22px, 7vw, 29px);
+  }
+
+  .lake-horizon-caption {
+    top: 37%;
+    font-size: clamp(0.63rem, 2.6vw, 0.83rem);
+  }
+
+  .lake-tour-message {
+    top: 45%;
+    width: 88%;
+    padding: 6px 8px;
+  }
+
+  .lake-tour-message strong {
+    font-size: 0.7rem;
+  }
+
+  .lake-tour-message span {
+    font-size: 0.61rem;
+  }
+
+  .lake-boat {
+    top: 59%;
+    width: clamp(112px, 38vw, 190px);
+    height: 33%;
+  }
+
+  .lake-player--shore {
+    height: 35%;
+  }
+
+  .lake-dock {
+    bottom: 23%;
+    height: 4%;
+  }
+
+  .lake-tour-actions {
+    right: 5px;
+    bottom: 5px;
+  }
+
+  .lake-interact-button {
+    min-height: 34px;
+    padding: 6px 9px;
+    font-size: 0.63rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lake-horizon-caption,
+  .lake-tower-art,
+  .lake-tower-outline path,
+  .lake-reeds,
+  .lake-reeds i,
+  .lake-player--shore,
+  .lake-tour-water {
+    animation: none !important;
+  }
+}

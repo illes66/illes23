@@ -240,61 +240,255 @@
 .portal-layer {
   z-index: 3;
   inset: 0;
+  transform: translate(var(--camera-offset-x, 0px), var(--camera-offset-y, 0px))
+    scale(var(--camera-scale, 1));
+  transform-origin: top left;
+  transition: transform var(--camera-transition-duration, 900ms) cubic-bezier(0.2, 0.72, 0.22, 1);
+  will-change: transform;
 }
 
 .portal {
+  /* Sign size: adjust together with the text badge and entrance cue below. */
   position: absolute;
+  z-index: 1;
   left: var(--portal-x);
   top: var(--portal-y);
-  min-width: 92px;
-  max-width: 145px;
-  min-height: 34px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 7px;
+  width: clamp(72px, 6vw, 96px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
   transform: translate(-50%, -50%);
-  border: 2px dashed #fff2c8;
-  border-radius: 12px;
-  background: #b53e49;
-  box-shadow: 0 4px 0 rgba(78, 40, 51, 0.4);
-  color: white;
-  font-size: clamp(0.54rem, 0.78vw, 0.76rem);
-  font-weight: 900;
-  text-align: left;
+  border-radius: 50%;
+  color: #fff8df;
   text-decoration: none;
   cursor: pointer;
 }
 
-.portal:hover,
+/* Add this class to map objects with data-interaction-x/y, radius, and dialog text.
+   The reusable proximity state is managed by js/interactive-animated-objects.js. */
+.interactive-animated-object {
+  position: relative;
+  --interactive-glow: #ffe46d;
+  /* Tune hover/proximity response time here; bob duration is set in the animation below. */
+  transition: filter 220ms ease, transform 220ms ease, scale 220ms ease;
+}
+
+.portal.interactive-animated-object {
+  position: absolute;
+}
+
+.interactive-animated-object[data-interaction-dialog]::after {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  width: max-content;
+  max-width: min(220px, 60vw);
+  padding: 7px 10px;
+  transform: translate(-50%, 5px) scale(0.94);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 12px;
+  background: rgba(48, 42, 55, 0.94);
+  box-shadow: 0 4px 14px rgba(34, 24, 35, 0.35);
+  color: #fff7df;
+  content: attr(data-interaction-dialog);
+  font-family: "Habibi", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: clamp(0.65rem, 0.85vw, 0.82rem);
+  line-height: 1.25;
+  opacity: 0;
+  pointer-events: none;
+  text-align: center;
+  transition: opacity 180ms ease, transform 180ms ease;
+  visibility: hidden;
+}
+
+.interactive-animated-object:hover,
+.interactive-animated-object:focus-visible,
+.interactive-animated-object.is-interactive-near,
 .portal.is-selected {
-  background: #7d434f;
-  outline: 2px solid #ffe99c;
-  outline-offset: 2px;
+  z-index: 2;
+  filter: drop-shadow(0 0 8px var(--interactive-glow)) drop-shadow(0 0 16px rgba(255, 114, 94, 0.72));
+  animation: interactive-object-bob 900ms ease-in-out infinite alternate;
+}
+
+/* Optional per-object zoom, disabled by default to keep the map stable:
+   add this rule for a single target, e.g. .portal--lake.is-interactive-near { scale: 1.08; }.
+   Use .is-selected for controller selection, .is-interactive-near for player proximity,
+   or :hover / :focus-visible for pointer and keyboard focus. */
+/*
+.portal--lake.is-interactive-near {
+  scale: 1.08;
+}
+*/
+
+.interactive-animated-object[data-interaction-dialog]:hover::after,
+.interactive-animated-object[data-interaction-dialog]:focus-visible::after,
+.interactive-animated-object[data-interaction-dialog].is-interactive-near::after {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  visibility: visible;
+}
+
+@keyframes interactive-object-bob {
+  /* Adjust vertical travel here; reduce or remove this animation for static objects. */
+  from { translate: 0 0; }
+  to { translate: 0 -4px; }
+}
+
+.portal-sign-art,
+.portal-sign-content {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.portal-sign-art {
+  /* UILetterSignCombo.svg is the sign backing; the PO name is overlaid on its banner. */
+  width: 100%;
+  height: 82%;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 2px rgba(48, 34, 37, 0.45));
+}
+
+.portal-sign-content {
+  z-index: 2;
+  width: max-content;
+  max-width: 88%;
+  min-height: 19px;
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transform: translate(-45%, -52%) rotate(-12deg);
+  border: 1px solid rgba(255, 248, 224, 0.8);
+  border-radius: 999px;
+  background: rgba(57, 39, 50, 0.92);
+  box-shadow: 0 2px 5px rgba(31, 24, 34, 0.45);
+  color: #fff8df;
+  font-family: "Habibi", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: clamp(0.6rem, 0.72vw, 0.76rem);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: none;
+  white-space: nowrap;
+}
+
+.portal-confirm-cue {
+  position: absolute;
+  z-index: 4;
+  top: calc(100% + 5px);
+  left: 50%;
+  padding: 3px 7px;
+  transform: translate(-50%, -4px) scale(0.9);
+  border: 2px solid #fff4ad;
+  border-radius: 999px;
+  background: #d34d55;
+  box-shadow: 0 0 0 2px rgba(53, 38, 48, 0.8), 0 0 12px rgba(255, 226, 91, 0.95);
+  color: #fff9e8;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  font-size: clamp(0.55rem, 0.68vw, 0.68rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 1px 1px rgba(47, 29, 41, 0.8);
+  transition: opacity 160ms ease, transform 160ms ease;
+  visibility: hidden;
+}
+
+.portal.is-selected .portal-sign-art,
+.portal:hover .portal-sign-art,
+.portal:focus-visible .portal-sign-art,
+.portal.is-player-inside .portal-sign-art,
+.portal.is-player-inside .portal-sign-content,
+.portal:hover .portal-sign-content,
+.portal:focus-visible .portal-sign-content,
+.portal.is-selected .portal-confirm-cue {
+  opacity: 1;
+}
+
+.portal.is-selected .portal-sign-art {
+  animation: portal-entry-glow 1.15s ease-in-out infinite alternate;
+}
+
+.portal.is-selected::before {
+  position: absolute;
+  z-index: 0;
+  inset: -7px;
+  border: 3px solid #fff2a1;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(57, 39, 50, 0.78), 0 0 18px 7px rgba(255, 218, 74, 0.82);
+  content: "";
+  pointer-events: none;
+  animation: portal-confirm-ring 900ms ease-in-out infinite alternate;
+}
+
+.portal.is-selected .portal-confirm-cue,
+.portal.is-player-inside .portal-confirm-cue,
+.portal:hover .portal-confirm-cue,
+.portal:focus-visible .portal-confirm-cue {
+  transform: translate(-50%, 0) scale(1);
+  opacity: 1;
+  visibility: visible;
+}
+
+.portal:hover,
+.portal:focus-visible {
+  z-index: 2;
+  outline: 3px solid #fff4ad;
+  outline-offset: 3px;
+}
+
+.portal:hover .portal-sign-art,
+.portal:focus-visible .portal-sign-art,
+.portal.is-player-inside .portal-sign-art {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.portal:hover .portal-sign-content,
+.portal:focus-visible .portal-sign-content,
+.portal.is-player-inside .portal-sign-content {
+  transform: translate(-45%, -52%) rotate(-12deg);
 }
 
 .portal-number {
   display: grid;
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
   place-items: center;
   border-radius: 50%;
   background: #f7d981;
   color: #48323d;
+  font-family: "Habibi", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: 0.58rem;
+  text-shadow: none;
 }
 
-.portal--future {
-  border-color: #fff8e4;
-  background: rgba(70, 77, 61, 0.83);
-  cursor: pointer;
-  opacity: 0.82;
+@keyframes portal-entry-glow {
+  from {
+    filter: hue-rotate(0deg) drop-shadow(0 0 5px #ffe46d) drop-shadow(0 0 10px #ff725e);
+  }
+  to {
+    filter: hue-rotate(35deg) drop-shadow(0 0 9px #8df3df) drop-shadow(0 0 18px #ffdf71);
+  }
 }
 
-.portal--future:hover {
-  background: rgba(70, 77, 61, 0.83);
-  outline: 2px solid #ffe99c;
-  outline-offset: 2px;
+@keyframes portal-confirm-ring {
+  from {
+    opacity: 0.72;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .portal--future-lower {
@@ -455,26 +649,34 @@ body.is-leaving .flower-curtain {
 }
 
 .mini-game-screen {
-  min-height: min(70vh, 650px);
+  /* The screen fills the shared console; tune padding here without changing the shell ratio. */
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
   display: grid;
   place-items: center;
-  overflow: hidden;
+  overflow: auto;
   padding: clamp(20px, 5vw, 70px);
   border: 3px solid #f7e3b4;
   border-radius: 24px;
   /* Per-game colors and zone heights are set in css/mini-game-themes.css. */
-  background: linear-gradient(
+  /* Optional PNG/SVG scene art and its crop are configured per game in mini-game-themes.css. */
+  background-image: var(--screen-image, none), linear-gradient(
     180deg,
     var(--screen-sky) 0 var(--screen-sky-end),
     var(--screen-water) var(--screen-sky-end) var(--screen-water-end),
     var(--screen-sand) var(--screen-water-end) 100%
   );
+  background-position: var(--screen-image-position, center), center;
+  background-size: var(--screen-image-size, cover), auto;
+  background-repeat: var(--screen-image-repeat, no-repeat), no-repeat;
+  background-blend-mode: var(--screen-image-blend, normal), normal;
   color: #3d2d32;
   text-align: center;
 }
 
 .mini-game-card {
-  max-width: 620px;
+  width: min(100%, 620px);
   padding: clamp(20px, 4vw, 44px);
   border: 2px dashed rgba(255, 255, 255, 0.9);
   border-radius: 24px;
@@ -547,20 +749,6 @@ body.is-leaving .flower-curtain {
     aspect-ratio: 1806 / 1013;
   }
 
-  .portal {
-    min-width: 72px;
-    max-width: 105px;
-    min-height: 30px;
-    padding: 3px 5px;
-    font-size: 0.52rem;
-  }
-
-  .portal-number {
-    width: 19px;
-    height: 19px;
-    flex-basis: 19px;
-  }
-
   .mini-game-screen {
     min-height: 65vh;
   }
@@ -574,8 +762,33 @@ body.is-leaving .flower-curtain {
   .welcome-overlay,
   .flower-curtain,
   .flower-transition-backdrop,
-  .po-outline-shape {
+  .po-outline-shape,
+  .interactive-animated-object {
     transition: none;
     animation: none !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .portal-sign-art {
+    width: 100%;
+  }
+
+  .portal {
+    width: clamp(46px, 12vw, 62px);
+  }
+
+  .player-marker {
+    width: clamp(34px, 9vw, 44px);
+  }
+
+  .portal-prompt {
+    bottom: 6px;
+    width: calc(100% - 12px);
+    max-width: 420px;
+    padding: 7px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    line-height: 1.3;
   }
 }

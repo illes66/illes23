@@ -1,8 +1,11 @@
 const body = document.body;
-const returnLink = document.querySelector(".back-to-fair");
+const returnLink = document.querySelector(".mini-game-return");
 const attractionName = document.querySelector("#attraction-title");
 const attractionNumber = document.querySelector("#attraction-number");
 const attractionScreen = document.querySelector("#fair-attraction");
+const consoleShell = document.querySelector(".mini-game-console");
+const sideNumber = document.querySelector("#mini-game-side-number");
+const sideTitle = document.querySelector("#mini-game-side-title");
 const attractions = {
   PO02_ComicForeground: { number: "02", name: "Comic", theme: "comic" },
   PO05_TeatrinoArea: { number: "05", name: "Teatrino", theme: "teatrino" },
@@ -14,10 +17,13 @@ const attractions = {
 if (!returnLink) throw new Error("The attraction page is missing its Return to the fair link.");
 
 const attraction = attractions[new URLSearchParams(window.location.search).get("po")];
-if (attraction && attractionName && attractionNumber && attractionScreen) {
+if (attraction && attractionName && attractionNumber && attractionScreen && consoleShell) {
   attractionName.textContent = attraction.name;
   attractionNumber.textContent = `Portal ${attraction.number} · Attraction WIP`;
   attractionScreen.dataset.miniGame = attraction.theme;
+  consoleShell.dataset.miniGame = attraction.theme;
+  if (sideNumber) sideNumber.textContent = `Portal ${attraction.number}`;
+  if (sideTitle) sideTitle.textContent = attraction.name;
   document.title = `${attraction.name} — Illes 23 Fair`;
 }
 

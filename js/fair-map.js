@@ -3,7 +3,8 @@ const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 // Add new flower PNGs here; the eight instances cycle through the configured assets.
 const FLOWER_ASSETS = ["rosa.png.png"];
 const FLOWER_COUNT = 8;
-const PO_FLOWER_SIZE = 56;
+const PATH_FLOWER_SIZE = 96;
+const PO_FLOWER_SIZE = 88;
 const PO_OUTLINE_FALLBACKS = {
   PO06_BenchArea: "M1290 510H1460V669H1290Z",
   PO07_FotoShootArea: "M605 75H763V232H605Z"
@@ -129,8 +130,8 @@ function addFenceFlowers(source, flowerLayer) {
     const flower = document.createElementNS("http://www.w3.org/2000/svg", "image");
     flower.setAttribute("href", FLOWER_ASSETS[index % FLOWER_ASSETS.length]);
     flower.setAttribute("filter", "url(#flower-white-background)");
-    flower.setAttribute("width", "78");
-    flower.setAttribute("height", "78");
+    flower.setAttribute("width", String(PATH_FLOWER_SIZE));
+    flower.setAttribute("height", String(PATH_FLOWER_SIZE));
     flower.setAttribute("aria-hidden", "true");
     flower.dataset.flowerIndex = String(index);
     flowerLayer.append(flower);
@@ -142,8 +143,9 @@ function addFenceFlowers(source, flowerLayer) {
       const offset = Number(flower.dataset.flowerIndex) / flowers.length;
       const distance = (timestamp * 0.025 + offset * length) % length;
       const point = path.getPointAtLength(distance);
-      flower.setAttribute("x", String(point.x - 39));
-      flower.setAttribute("y", String(point.y - 39));
+      const halfSize = PATH_FLOWER_SIZE / 2;
+      flower.setAttribute("x", String(point.x - halfSize));
+      flower.setAttribute("y", String(point.y - halfSize));
     }
   };
 }

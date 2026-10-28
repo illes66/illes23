@@ -10,17 +10,44 @@
     <link rel="stylesheet" href="../css/mini-game-themes.css">
   </head>
   <body class="mini-game-body">
-    <main class="mini-game-console">
-      <section class="mini-game-screen" id="fishing-game" data-mini-game="fishing" aria-labelledby="fishing-game-title">
-        <div class="mini-game-card">
-          <p class="welcome-label">Portal 02 · Attraction WIP</p>
-          <h1 id="fishing-game-title">Fishing Game</h1>
-          <p>A dedicated page for the fairground fishing booth. Later, catches can reveal portfolio stories, marketing work, and hidden treasures.</p>
-          <!-- TODO: Port the fishing prototype into this page as an independent module.
-               Keep its gameplay input bindings separate from the fair-map movement rules. -->
-          <a class="back-to-fair" href="../index.html">Return to the fair</a>
-        </div>
+    <main class="mini-game-console console-shell" data-mini-game="fishing">
+      <aside class="console-side console-side--left" aria-label="Fishing attraction details">
+        <section class="side-panel mini-game-side-panel">
+          <h2 class="side-heading">Portal 03</h2>
+          <p>Circus Fishing</p>
+        </section>
+      </aside>
+      <section class="console-main mini-game-main" aria-label="Fishing game screen">
+        <header class="screen-header">
+          <a class="brand" href="../index.html" aria-label="Illes 23 Fair home">
+            <img class="brand-sign" src="../UILetterSignCombo.svg" alt="">
+            <span class="brand-title">ILLES <span>23</span> FAIR</span>
+          </a>
+          <div class="screen-tools">
+            <p class="screen-status">Circus Fishing</p>
+            <a class="mini-game-return" href="../index.html">Return to fair</a>
+          </div>
+        </header>
+        <section class="mini-game-screen" id="fishing-game" data-mini-game="fishing" aria-labelledby="fishing-game-title">
+          <div class="mini-game-card">
+            <p class="welcome-label">Portal 03 · Attraction WIP</p>
+            <h1 id="fishing-game-title">Fishing Game</h1>
+            <p>A dedicated page for the fairground fishing booth. Later, catches can reveal portfolio stories, marketing work, and hidden treasures.</p>
+            <!-- TODO: Port the fishing prototype into this page as an independent module.
+                 Keep its gameplay input bindings separate from the fair-map movement rules. -->
+          </div>
+        </section>
+        <footer class="screen-footer">
+          <span>CIRCUS FISHING · PORTAL 03</span>
+          <span>ATTRACTION IN DEVELOPMENT</span>
+        </footer>
       </section>
+      <aside class="console-side console-side--right" aria-label="Fishing game information">
+        <section class="side-panel mini-game-side-panel">
+          <h2 class="side-heading">Coming soon</h2>
+          <p>Fishing gameplay will be added here.</p>
+        </section>
+      </aside>
     </main>
     <div class="flower-transition-backdrop" aria-hidden="true"></div>
     <div class="flower-curtain flower-curtain--left" aria-hidden="true"><img src="../assets/flower-curtain.svg" alt=""></div>

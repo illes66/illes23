@@ -9,7 +9,21 @@ export function createPortals({
 }) {
   const portals = [...viewport.querySelectorAll("[data-portal][data-po-id]")];
   const artworkLayers = [...viewport.querySelectorAll(".po-art[data-po-id]")];
-  const gateRadius = 4.2;
+  for (const portal of portals) {
+    for (const [dataName, styleName] of [
+      ["zoneX", "--zone-left"],
+      ["zoneY", "--zone-top"],
+      ["zoneWidth", "--zone-width"],
+      ["zoneHeight", "--zone-height"]
+    ]) {
+      const value = Number(portal.dataset[dataName]);
+      if (!Number.isFinite(value)) {
+        throw new Error(`Portal ${portal.dataset.poId} has an invalid ${dataName}.`);
+      }
+      portal.style.setProperty(styleName, `${value}%`);
+    }
+  }
+
   let selectedPortal = portals.find((portal) => portal.dataset.portal === initialPortalId)
     ?? portals[0]
     ?? null;
@@ -17,7 +31,9 @@ export function createPortals({
   let navigationStarted = false;
 
   function portalName(portal) {
-    return portal.querySelector("span:last-child")?.textContent?.trim() ?? portal.dataset.portal;
+    return portal.querySelector(".portal-name")?.textContent?.trim()
+      ?? portal.querySelector("span:last-child")?.textContent?.trim()
+      ?? portal.dataset.portal;
   }
 
   function getPlayerAreaId(position = player.getPosition()) {
@@ -32,13 +48,8 @@ export function createPortals({
     return position.x >= left && position.x <= right && position.y >= top && position.y <= bottom;
   }
 
-  function isPlayerAtGate(portal, position = player.getPosition()) {
-    const gateX = Number(portal.dataset.gateX);
-    const gateY = Number(portal.dataset.gateY);
-    return Math.hypot(gateX - position.x, gateY - position.y) <= gateRadius;
-  }
-
   function setPOState(portal, state, enabled) {
+    portal.classList.toggle(state, enabled);
     const poId = portal.dataset.poId;
     for (const layer of document.querySelectorAll(
       ".po-art[data-po-id], .po-outline[data-po-id], .po-fence-flower-track[data-po-id]"
@@ -50,6 +61,11 @@ export function createPortals({
   function select(portal, manual = false) {
     selectedPortal = portal;
     selectedManually = manual;
+    const portalLayer = portal.closest(".portal-layer");
+    if (manual && portalLayer && portalLayer.scrollWidth > portalLayer.clientWidth) {
+      portal.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+
     portals.forEach((item) => {
       const isSelected = item === selectedPortal;
       item.classList.toggle("is-selected", isSelected);
@@ -77,7 +93,7 @@ export function createPortals({
       setPOState(portal, "is-player-inside", isPlayerInside(portal, position));
     }
 
-    if (insidePortal && (!selectedManually || insidePortal === selectedPortal)) {
+    if (insidePortal && !selectedManually) {
       select(insidePortal);
     }
 
@@ -88,16 +104,11 @@ export function createPortals({
     }
 
     const name = portalName(selectedPortal);
-    if (isPlayerAtGate(selectedPortal, position)) {
-      promptElement.textContent = selectedPortal.matches("a[href]")
-        ? `At the ${name} gate. Press Space or the center button to enter.`
-        : `${name} is selected but not open yet.`;
-      statusElement.textContent = `At the ${name} gate`;
-    } else if (isPlayerInside(selectedPortal, position)) {
-      promptElement.textContent = `${name} area. Walk through its Door / Portal gate to confirm entry.`;
+    if (isPlayerInside(selectedPortal, position)) {
+      promptElement.textContent = `${name} area. Click its highlighted entrance or press Space / the center button to enter.`;
       statusElement.textContent = `Explore ${name}`;
     } else {
-      promptElement.textContent = `${name} selected. Walk to its Door / Portal gate, then confirm.`;
+      promptElement.textContent = `${name} selected. Click its highlighted entrance or press Space / the center button to enter.`;
       statusElement.textContent = `Selected: ${name}`;
     }
   }
@@ -106,7 +117,7 @@ export function createPortals({
     if (navigationStarted) return;
     navigationStarted = true;
     onAttractionVisited(portal.dataset.poId);
-    onBeforeNavigate();
+    onBeforeNavigate(portal);
     document.body.classList.add("is-leaving");
     window.setTimeout(() => window.location.assign(portal.href), 560);
   }
@@ -117,19 +128,6 @@ export function createPortals({
       return;
     }
 
-    const name = portalName(selectedPortal);
-    if (!isPlayerAtGate(selectedPortal)) {
-      promptElement.textContent = `${name} selected. Walk through its Door / Portal gate before confirming.`;
-      statusElement.textContent = `Walk to the ${name} gate to enter`;
-      return;
-    }
-
-    if (!selectedPortal.matches("a[href]")) {
-      promptElement.textContent = `${name} is still in development.`;
-      statusElement.textContent = `${name} is not open yet`;
-      return;
-    }
-
     navigate(selectedPortal);
   }
 
@@ -137,7 +135,7 @@ export function createPortals({
     portal.addEventListener("click", (event) => {
       event.preventDefault();
       select(portal, true);
-      update();
+      navigate(portal);
     });
     portal.addEventListener("focus", () => select(portal, true));
   }

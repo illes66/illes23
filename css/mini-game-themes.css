@@ -1,12 +1,55 @@
-/* Edit a game's colors and zone heights here.
-   sky-end sets where sky ends; water-end sets where water ends and sand begins.
-   Percentages are measured from the top of each mini-game screen. */
+/* Edit game palettes, scene PNG/SVG backdrops, crop position, and zone heights here.
+   Scene asset URLs are relative to this CSS file. Set --screen-image to url("../assets/your-scene.png"),
+   then adjust --screen-image-position (crop focus), --screen-image-size (cover/contain), and
+   --screen-image-blend (for example: soft-light). Use none to keep the gradient only.
+   sky-end and water-end are percentages measured from the screen's top edge. */
 .mini-game-screen {
   --screen-sky: #91c9cb;
   --screen-water: #87bdb0;
   --screen-sand: #e6b977;
   --screen-sky-end: 42%;
   --screen-water-end: 65%;
+  --screen-image: none;
+  --screen-image-position: center;
+  --screen-image-size: cover;
+  --screen-image-repeat: no-repeat;
+  --screen-image-blend: normal;
+}
+
+/* Each console shell can use a separate colorway while retaining the home page's shape. */
+.mini-game-console[data-mini-game="fishing"] {
+  --console-shell: #397c80;
+  --console-highlight: #a6d9d4;
+}
+
+.mini-game-console[data-mini-game="lake-tour"] {
+  --console-shell: #397c80;
+  --console-highlight: #b5e5ee;
+}
+
+.mini-game-console[data-mini-game="comic"] {
+  --console-shell: #8c536a;
+  --console-highlight: #efb4bc;
+}
+
+.mini-game-console[data-mini-game="teatrino"] {
+  --console-shell: #756083;
+  --console-highlight: #d3b9df;
+}
+
+.mini-game-console[data-mini-game="bench"] {
+  --console-shell: #477a67;
+  --console-highlight: #b6d6a5;
+}
+
+.mini-game-console[data-mini-game="photo-shoot"] {
+  --console-shell: #477993;
+  --console-highlight: #b8def4;
+}
+
+.mini-game-console[data-mini-game="cafeteria"] {
+  --console-shell: #96644f;
+  --console-highlight: #f1c89b;
 }
 
 .mini-game-screen[data-mini-game="fishing"] {
@@ -23,6 +66,11 @@
   --screen-sand: #eed29b;
   --screen-sky-end: 36%;
   --screen-water-end: 80%;
+  /* Lake Tour palette hooks used by css/lake-tour.css; edit these to retheme the sunset. */
+  --lake-sky: #f6c99c;
+  --lake-sunset: #ecaa9d;
+  --lake-water: #398b9d;
+  --lake-reed: #82945d;
 }
 
 .mini-game-screen[data-mini-game="comic"] {

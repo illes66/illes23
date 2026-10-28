@@ -3,14 +3,18 @@ import "./attraction-page.js";
 const gameRoot = document.querySelector("#comic-game");
 if (!gameRoot) throw new Error("Comic Foreground game root was not found.");
 
+// Adjust round pacing here; SHOOT_FLASH_MS should stay in sync with the booth-flash
+// animation in css/comic-game.css so the result state and camera flash end together.
 const PULSE_INTERVAL_MS = 2500;
 const SHOOT_EVERY_PULSES = 3;
 const SHOOT_FLASH_MS = 650;
 const CLOCK_REFRESH_MS = 100;
 const RESULT_POINTS = { match: 10, read: 4, miss: 0 };
-// Add each new character once, then set its mutual partnerId and shared familyId.
-// Set image paths relative to this JS module when PNGs are uploaded. Null keeps
-// the demo placeholder visible until the art is ready.
+// Add each character here and set a reciprocal partnerId/shared familyId.
+// PNG paths are relative to this JS module (for example:
+// "../assets/minigames/photo-booth/characters/hotdog/head.png"). Keep transparent
+// PNGs square where possible; CSS object-fit in comic-game.css controls contain/crop.
+// Leave an image field null to show the colored emoji placeholder instead.
 const CHARACTERS = [
   {
     id: "hotdog", name: "Hot dog", emoji: "🌭", color: "#e7a36c",
